@@ -1,55 +1,45 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- SYNC IMPACT REPORT
+Version change: N/A (initial version) → 1.0.0
+Modified principles: None (new constitution)
+Added sections: All principles and sections (new constitution)
+Removed sections: None
+Templates requiring updates: ⚠ pending - .specify/templates/plan-template.md, .specify/templates/spec-template.md, .specify/templates/tasks-template.md
+Follow-up TODOs: RATIFICATION_DATE needs to be determined
+-->
+
+# Progressive Todo Application (Console → Web → AI → Cloud) Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Phase-First Correctness
+Each phase must be complete, stable, and usable on its own; No premature optimization for future phases; Phase I must remain dependency-free and fully in-memory
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### Simplicity Before Scale
+Prefer clear, readable code over clever abstractions; Explicit logic over hidden magic; Minimal dependencies per phase
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### Clean Evolution
+Architectural decisions must allow extension, not rewrites; Domain logic must remain portable across interfaces (CLI → API → Agent)
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### Deterministic Behavior
+Same input must always produce the same output; No hidden state, randomness, or side effects in Phase I
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### Human-Centered UX (even in CLI)
+Clear prompts; Predictable commands; Helpful error messages
 
-### [PRINCIPLE_6_NAME]
+### Phase-Specific Standards
+Technology and standards for each phase:
+- Phase I: Python (standard library only), Claude Code, Spec-Kit Plus - No database, no file persistence, no external APIs; All data stored in memory; Console-only interaction
+- Phase II: Next.js, FastAPI, SQLModel, Neon DB - Domain logic from Phase I must be reusable; RESTful API design; Persistent storage via SQLModel
+- Phase III: OpenAI ChatKit, Agents SDK, Official MCP SDK - AI must operate on the existing domain logic; No business logic embedded directly in prompts
+- Phase IV: Docker, Minikube, Helm, kubectl-ai, kagent - Containerized services; Reproducible local deployment; No cloud dependencies
+- Phase V: Kafka, Dapr, DigitalOcean DOKS - Event-driven architecture; Observability-ready; Horizontal scalability
 
-
-[PRINCIPLE__DESCRIPTION]
-
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Constraints and Quality Standards
+Global constraints: Each phase must compile, run, and be demoable independently; Breaking changes across phases must be explicitly documented; No vendor lock-in assumptions
+Phase I Specific: Python >= 3.10; Zero external packages; No file system usage; Execution via: `python main.py`
+Quality Standards: Code readability > performance; Explicit naming (no abbreviations); Docstrings for all public functions; Consistent command naming in CLI; Errors must explain what went wrong and how to fix it
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+All development must follow the phased approach as specified; Each phase must be complete and stable before moving to the next; Constitution violations must be documented and addressed; All team members must understand and follow the core principles; Versioning follows semantic versioning based on principle changes
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): Original adoption date needs to be determined | **Last Amended**: 2026-01-30

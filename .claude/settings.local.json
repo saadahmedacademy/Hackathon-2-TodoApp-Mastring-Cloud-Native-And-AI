@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source venv/bin/activate)",
+      "Bash(python -m pytest tests/auth/test_auth.py::test_user_registration_duplicate_email -v)"
+    ]
+  }
+}

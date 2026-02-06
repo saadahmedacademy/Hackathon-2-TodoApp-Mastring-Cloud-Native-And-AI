@@ -1,0 +1,120 @@
+# Feature Specification: Console Todo Application
+
+**Feature Branch**: `001-console-todo-app`
+**Created**: 2026-01-30
+**Status**: Draft
+**Input**: User description: "Project: Phase I — In-Memory Python Console Todo Application"
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 - Add Todo Items (Priority: P1)
+
+Users need to add new todo items to their list during a single session.
+
+**Why this priority**: This is the foundational capability that enables all other functionality.
+
+**Independent Test**: Users can successfully add new todo items with titles and optional descriptions, and these items appear in their todo list.
+
+**Acceptance Scenarios**:
+
+1. **Given** user is at the main menu, **When** user selects "Add Todo" and enters a title, **Then** a new todo with unique ID and incomplete status is created
+2. **Given** user is adding a todo, **When** user provides both title and description, **Then** both are saved with the todo item
+
+---
+
+### User Story 2 - View Todo List (Priority: P1)
+
+Users need to see all their todo items with relevant information.
+
+**Why this priority**: Essential for users to understand their current task list and track progress.
+
+**Independent Test**: Users can view all todos with their IDs, titles, and completion status.
+
+**Acceptance Scenarios**:
+
+1. **Given** user has added todo items, **When** user selects "View Todos", **Then** all todos are displayed with ID, title, and completion status
+2. **Given** user has no todos, **When** user selects "View Todos", **Then** an appropriate empty state message is shown
+
+---
+
+### User Story 3 - Update Todo Items (Priority: P2)
+
+Users need to modify existing todo items to reflect changes in requirements or details.
+
+**Why this priority**: Allows users to maintain accurate information in their todo items without recreating them.
+
+**Independent Test**: Users can update a todo's title and/or description without affecting other properties.
+
+**Acceptance Scenarios**:
+
+1. **Given** user has todo items, **When** user updates a specific todo's title, **Then** only the title changes while other properties remain intact
+2. **Given** user attempts to update a non-existent todo, **When** invalid ID is provided, **Then** error is handled gracefully without app crash
+
+---
+
+### User Story 4 - Mark Todo as Complete (Priority: P1)
+
+Users need to mark completed tasks to track their progress.
+
+**Why this priority**: Core functionality for task management - users need to indicate when tasks are finished.
+
+**Independent Test**: Users can mark any todo as complete and see its status update.
+
+**Acceptance Scenarios**:
+
+1. **Given** user has an incomplete todo, **When** user marks it as complete, **Then** the status changes to completed
+2. **Given** user attempts to mark an already completed todo, **When** completion action is repeated, **Then** system handles it gracefully
+
+---
+
+### User Story 5 - Delete Todo Items (Priority: P2)
+
+Users need to remove todos that are no longer needed.
+
+**Why this priority**: Allows users to keep their todo list focused and relevant.
+
+**Independent Test**: Users can remove unwanted todos with clear confirmation or feedback.
+
+**Acceptance Scenarios**:
+
+1. **Given** user has todo items, **When** user deletes a specific todo, **Then** that item is removed from the list
+2. **Given** user attempts to delete a non-existent todo, **When** invalid ID is provided, **Then** error is handled gracefully without app crash
+
+---
+
+### Edge Cases
+
+- What happens when user enters invalid input (non-numeric IDs, empty titles)?
+- How does system handle malformed input that could cause crashes?
+- What occurs when user tries to perform operations on an empty todo list?
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST allow users to add new todo items with unique IDs, required titles, optional descriptions, and default incomplete status
+- **FR-002**: System MUST display all todos showing ID, title, and completion status
+- **FR-003**: System MUST handle empty todo list state gracefully with appropriate messaging
+- **FR-004**: System MUST allow users to update existing todo titles and/or descriptions
+- **FR-005**: System MUST handle attempts to update non-existent todos gracefully without crashing
+- **FR-006**: System MUST allow users to mark todos as completed using their IDs
+- **FR-007**: System MUST handle attempts to mark already completed todos without crashing
+- **FR-008**: System MUST allow users to delete todos by ID with appropriate feedback
+- **FR-009**: System MUST handle attempts to delete non-existent todos gracefully without crashing
+- **FR-010**: System MUST never crash on invalid user input and provide helpful error messages
+
+### Key Entities
+
+- **Todo Item**: Represents a single task with ID, title, optional description, and completion status
+- **Todo List**: Collection of todo items managed during a single session
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can add new todo items in under 30 seconds with clear confirmation
+- **SC-002**: Users can view all todos with clear display of ID, title, and completion status
+- **SC-003**: System handles 100% of invalid inputs gracefully without crashes
+- **SC-004**: Users can complete all basic operations (add, view, update, complete, delete) with minimal confusion
+- **SC-005**: 95% of user interactions result in successful operations without system errors
+- **SC-006**: Application loads and responds to user commands within 2 seconds

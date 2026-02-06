@@ -2,13 +2,20 @@
 
 This file is generated during init for the selected agent.
 
-You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
+You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to transform the console todo app into a modern multi-user web application with persistent storage using the Agentic Dev Stack workflow.
 
 ## Task context
 
-**Your Surface:** You operate on a project level, providing guidance to users and executing development tasks via a defined set of tools.
+**Your Surface:** You operate on a project level, providing guidance to users and executing development tasks via a defined set of specialized agents.
 
 **Your Success is Measured By:**
+- Transform the console app into a modern web application with all 5 Basic Level features implemented
+- Follow the Agentic Dev Stack workflow: Write spec → Generate plan → Break into tasks → Implement via Claude Code
+- Use specialized agents for different layers:
+  - **Auth Agent**: Handle authentication using Better Auth with JWT tokens
+  - **Frontend Agent**: Develop responsive frontend using Next.js 16+ (App Router)
+  - **DB Agent**: Design and manage Neon Serverless PostgreSQL database using SQLModel
+  - **Backend Agent**: Build RESTful API endpoints using Python FastAPI
 - All outputs strictly follow the user intent.
 - Prompt History Records (PHRs) are created automatically and accurately for every user prompt.
 - Architectural Decision Record (ADR) suggestions are made intelligently for significant decisions.
@@ -196,8 +203,27 @@ If ALL true, suggest:
 
 Wait for consent; never auto-create ADRs. Group related decisions (stacks, authentication, deployment) into one ADR when appropriate.
 
-## Basic Project Structure
+## Technology Stack and Project Structure
 
+### Layer Architecture
+- **Frontend**: Next.js 16+ (App Router) managed by Frontend Agent
+- **Backend**: Python FastAPI managed by Backend Agent
+- **ORM**: SQLModel managed by DB Agent
+- **Database**: Neon Serverless PostgreSQL managed by DB Agent
+- **Spec-Driven**: Claude Code + Spec-Kit Plus
+- **Authentication**: Better Auth with JWT tokens managed by Auth Agent
+
+### Authentication Flow
+Better Auth is configured to issue JWT (JSON Web Token) tokens when users log in. These tokens are self-contained credentials that include user information and can be verified by any service that knows the secret key.
+
+**How It Works:**
+1. User logs in on Frontend → Better Auth creates a session and issues a JWT token
+2. Frontend makes API call → Includes the JWT token in the Authorization: Bearer <token> header
+3. Backend receives request → Extracts token from header, verifies signature using shared secret
+4. Backend identifies user → Decodes token to get user ID, email, etc. and matches it with the user ID in the URL
+5. Backend filters data → Returns only tasks belonging to that user
+
+### Project Structure
 - `.specify/memory/constitution.md` — Project principles
 - `specs/<feature>/spec.md` — Feature requirements
 - `specs/<feature>/plan.md` — Architecture decisions
@@ -206,5 +232,30 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 - `history/adr/` — Architecture Decision Records
 - `.specify/` — SpecKit Plus templates and scripts
 
-## Code Standards
+## Development Approach and Requirements
+
+### Agentic Dev Stack Workflow
+Use the Agentic Dev Stack workflow: Write spec → Generate plan → Break into tasks → Implement via Claude Code. No manual coding is allowed. The process follows these phases:
+1. **Specification**: Define feature requirements using `/sp.specify`
+2. **Planning**: Generate architectural decisions using `/sp.plan`
+3. **Task Breakdown**: Create testable tasks with cases using `/sp.tasks`
+4. **Implementation**: Execute tasks automatically using `/sp.implement`
+
+### Basic Level Functionality Requirements
+Transform the console todo app into a modern multi-user web application with persistent storage by implementing all 5 Basic Level features as a web application:
+- Create RESTful API endpoints
+- Build responsive frontend interface
+- Store data in Neon Serverless PostgreSQL database
+- Authentication – Implement user signup/signin using Better Auth
+- Multi-user support with proper data isolation
+
+### Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Recent Changes
+- 001-frontend-web-app: Added TypeScript 5.0+, JavaScript ES2022 + Next.js 16+, React 18+, App Router, Tailwind CSS, axios/fetch API
+- 003-auth: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+
+## Active Technologies
+- TypeScript 5.0+, JavaScript ES2022 + Next.js 16+, React 18+, App Router, Tailwind CSS, axios/fetch API (001-frontend-web-app)
+- Browser localStorage/sessionStorage for auth state persistence (N/A for backend data) (001-frontend-web-app)
