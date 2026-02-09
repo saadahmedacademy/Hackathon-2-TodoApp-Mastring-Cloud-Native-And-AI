@@ -1,5 +1,6 @@
 """Main FastAPI application for the todo backend."""
 from fastapi import FastAPI, Depends, HTTPException, status
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
 from typing import List, Optional
@@ -36,10 +37,10 @@ add_logging_middleware(app)
 # Add CORS middleware for frontend integration (before auth middleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend origin
+    allow_origins=["http://localhost:3000"],  # Frontend origin
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],  # Explicitly allow methods
+    allow_headers=["Authorization", "Content-Type"],  # Explicitly allow headers
 )
 
 # Add authentication middleware
@@ -50,21 +51,15 @@ app.include_router(auth_router)
 
 
 # API Routes
-@app.post("/api/{user_id}/tasks", response_model=TodoRead, status_code=status.HTTP_201_CREATED)
+@app.post("/api/tasks", response_model=TodoRead, status_code=status.HTTP_201_CREATED)
 async def create_todo(
-    user_id: str,
     todo_data: TodoCreate,
-    current_user: str = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """Create a new todo for the specified user."""
-    # Validate user_id format
-    if not validate_user_id(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID format")
-
-    # Verify that the authenticated user matches the requested user_id
-    if user_id != current_user:
-        raise HTTPException(status_code=403, detail="Not authorized to access this user's data")
+    """Create a new todo for the authenticated user."""
+    # The user_id is now derived from the JWT token
+    user_id = current_user_id
 
     service = TodoService(session)
     try:
@@ -76,46 +71,34 @@ async def create_todo(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@app.get("/api/{user_id}/tasks", response_model=List[TodoRead])
+@app.get("/api/tasks", response_model=List[TodoRead])
 async def get_all_todos(
-    user_id: str,
-    current_user: str = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     completed: Optional[bool] = None,
     session: Session = Depends(get_session)
 ):
-    """Retrieve all todos for the specified user."""
-    # Validate user_id format
-    if not validate_user_id(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID format")
-
-    # Verify that the authenticated user matches the requested user_id
-    if user_id != current_user:
-        raise HTTPException(status_code=403, detail="Not authorized to access this user's data")
+    """Retrieve all todos for the authenticated user."""
+    # The user_id is now derived from the JWT token
+    user_id = current_user_id
 
     service = TodoService(session)
     todos = service.get_all_todos(user_id, completed)
     return todos
 
 
-@app.get("/api/{user_id}/tasks/{id}", response_model=TodoRead)
+@app.get("/api/tasks/{id}", response_model=TodoRead)
 async def get_todo_by_id(
-    user_id: str,
     id: int,
-    current_user: str = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """Retrieve a specific todo by ID for the specified user."""
-    # Validate user_id format
-    if not validate_user_id(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    """Retrieve a specific todo by ID for the authenticated user."""
+    # The user_id is now derived from the JWT token
+    user_id = current_user_id
 
     # Validate todo_id format
     if not validate_todo_id(id):
         raise HTTPException(status_code=400, detail="Invalid todo ID format")
-
-    # Verify that the authenticated user matches the requested user_id
-    if user_id != current_user:
-        raise HTTPException(status_code=403, detail="Not authorized to access this user's data")
 
     service = TodoService(session)
     todo = service.get_todo_by_id(user_id, id)
@@ -124,26 +107,20 @@ async def get_todo_by_id(
     return todo
 
 
-@app.put("/api/{user_id}/tasks/{id}", response_model=TodoRead)
+@app.put("/api/tasks/{id}", response_model=TodoRead)
 async def update_todo(
-    user_id: str,
     id: int,
     todo_data: TodoUpdate,
-    current_user: str = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """Update an existing todo for the specified user."""
-    # Validate user_id format
-    if not validate_user_id(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    """Update an existing todo for the authenticated user."""
+    # The user_id is now derived from the JWT token
+    user_id = current_user_id
 
     # Validate todo_id format
     if not validate_todo_id(id):
         raise HTTPException(status_code=400, detail="Invalid todo ID format")
-
-    # Verify that the authenticated user matches the requested user_id
-    if user_id != current_user:
-        raise HTTPException(status_code=403, detail="Not authorized to access this user's data")
 
     service = TodoService(session)
     todo = service.update_todo(user_id, id, todo_data)
@@ -152,25 +129,19 @@ async def update_todo(
     return todo
 
 
-@app.delete("/api/{user_id}/tasks/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/api/tasks/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(
-    user_id: str,
     id: int,
-    current_user: str = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """Delete a specific todo by ID for the specified user."""
-    # Validate user_id format
-    if not validate_user_id(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    """Delete a specific todo by ID for the authenticated user."""
+    # The user_id is now derived from the JWT token
+    user_id = current_user_id
 
     # Validate todo_id format
     if not validate_todo_id(id):
         raise HTTPException(status_code=400, detail="Invalid todo ID format")
-
-    # Verify that the authenticated user matches the requested user_id
-    if user_id != current_user:
-        raise HTTPException(status_code=403, detail="Not authorized to access this user's data")
 
     service = TodoService(session)
     success = service.delete_todo(user_id, id)
@@ -178,29 +149,28 @@ async def delete_todo(
         raise HTTPException(status_code=404, detail="Todo not found")
 
 
-@app.patch("/api/{user_id}/tasks/{id}/complete", response_model=TodoRead)
+class TodoCompleteUpdate(BaseModel):
+    """Request model for updating todo completion status."""
+    completed: bool
+
+
+@app.patch("/api/tasks/{id}/complete", response_model=TodoRead)
 async def mark_todo_complete(
-    user_id: str,
     id: int,
-    completed: bool,
-    current_user: str = Depends(get_current_user),
+    update_data: TodoCompleteUpdate,
+    current_user_id: str = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """Mark a todo as complete or incomplete for the specified user."""
-    # Validate user_id format
-    if not validate_user_id(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    """Mark a todo as complete or incomplete for the authenticated user."""
+    # The user_id is now derived from the JWT token
+    user_id = current_user_id
 
     # Validate todo_id format
     if not validate_todo_id(id):
         raise HTTPException(status_code=400, detail="Invalid todo ID format")
 
-    # Verify that the authenticated user matches the requested user_id
-    if user_id != current_user:
-        raise HTTPException(status_code=403, detail="Not authorized to access this user's data")
-
     service = TodoService(session)
-    todo = service.mark_complete(user_id, id, completed)
+    todo = service.mark_complete(user_id, id, update_data.completed)
     if not todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     return todo

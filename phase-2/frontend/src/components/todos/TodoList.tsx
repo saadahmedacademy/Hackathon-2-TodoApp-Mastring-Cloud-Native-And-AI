@@ -10,9 +10,12 @@ import Skeleton from '@/components/ui/Skeleton';
 interface TodoListProps {
   todos: Todo[];
   loading: boolean;
+  toggleTodoCompletionLocally?: (id: string, completed: boolean) => Promise<any>;
+  updateTodoLocally?: (id: string, todoData: Partial<Todo>) => Promise<any>;
+  deleteTodoLocally?: (id: string) => Promise<any>;
 }
 
-export default function TodoList({ todos, loading }: TodoListProps) {
+export default function TodoList({ todos, loading, toggleTodoCompletionLocally, updateTodoLocally, deleteTodoLocally }: TodoListProps) {
   const handleTodoUpdate = (updatedTodo: Todo) => {
     // This function can be used to update the todo in the parent component if needed
     console.log('Todo updated:', updatedTodo);
@@ -93,6 +96,9 @@ export default function TodoList({ todos, loading }: TodoListProps) {
                 todo={todo}
                 onUpdate={handleTodoUpdate}
                 onDelete={handleTodoDelete}
+                toggleTodoCompletionLocally={toggleTodoCompletionLocally}
+                updateTodoLocally={updateTodoLocally}
+                deleteTodoLocally={deleteTodoLocally}
               />
             </li>
           ))}

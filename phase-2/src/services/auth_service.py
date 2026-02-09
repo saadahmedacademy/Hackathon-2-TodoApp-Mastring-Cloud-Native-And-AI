@@ -4,6 +4,7 @@ from sqlmodel import Session, select
 from typing import Optional
 from datetime import timedelta
 import uuid
+import logging
 
 from ..models.user import User
 from ..auth.security import verify_password, get_password_hash, create_access_token, create_refresh_token
@@ -53,6 +54,7 @@ class AuthService:
                 raise TodoValidationError("Email already registered", status_code=409)
 
             self.session.rollback()
+            logging.error(f"Error during user registration and commit: {e}", exc_info=True)
             raise TodoValidationError(f"Registration failed: {str(e)}", status_code=500)
 
     def authenticate_user(self, user_login: UserLogin) -> Optional[TokenResponse]:

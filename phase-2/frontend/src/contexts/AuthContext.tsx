@@ -4,7 +4,7 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthState, AuthContextType, SignupCredentials, SigninCredentials } from '@/types/auth';
 import { User } from '@/types';
 import { apiClient } from '@/lib/api';
-import { isValidToken, setToken, removeToken } from '@/lib/auth';
+import { isValidToken } from '@/lib/auth';
 
 // Initial state
 const initialState: AuthState = {
@@ -29,6 +29,7 @@ type AuthAction =
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'AUTH_INIT':
+      const hasValidUser = action.payload.user && action.payload.user.email; // Keep for now as context, but not used in isAuthenticated directly.
       return {
         ...state,
         isAuthenticated: !!action.payload.token && isValidToken(action.payload.token),
@@ -91,44 +92,67 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  useEffect(() => {
-    // Initialize auth state from localStorage on mount
+
+  const getStoredAuth = (): { token: string | null; user: User | null } => {
     const token = localStorage.getItem('jwt_token');
-
-    if (token && isValidToken(token)) {
-      // If we have a valid token, try to get user info
-      const fetchUser = async () => {
-        dispatch({ type: 'SET_LOADING', payload: true });
-
-        try {
-          // We'll need to update the API client to have a method to get user info
-          // For now, we'll just validate the token exists and is valid
-          // The actual user data can be retrieved separately if needed
-
-          // For this implementation, we'll just initialize with the token
-          // and set a temporary user object - in a real app, we'd call an API to get user details
-          const tempUser = { id: 'temp', email: 'temp@example.com', createdAt: new Date().toISOString() }; // Placeholder
-
-          dispatch({
-            type: 'AUTH_INIT',
-            payload: { user: tempUser, token }
-          });
-        } catch (error) {
-          console.error('Failed to initialize auth:', error);
-          dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize authentication' });
-          removeToken(); // Remove invalid token
-        }
-      };
-
-      fetchUser();
-    } else {
-      // No valid token, set loading to false
-      dispatch({ type: 'AUTH_INIT', payload: { user: null, token: null } });
+    const userData = localStorage.getItem('user_data');
+    let user: User | null = null;
+    if (userData) {
+      try {
+        user = JSON.parse(userData);
+      } catch (e) {
+        console.error("Failed to parse stored user data:", e);
+        localStorage.removeItem('user_data');
+      }
     }
-  }, []);
+    return { token, user };
+  };
+
+  const setLocalAuth = (token: string | null, user: User | null) => {
+    if (token) {
+      localStorage.setItem('jwt_token', token);
+    } else {
+      localStorage.removeItem('jwt_token');
+    }
+    if (user) {
+      localStorage.setItem('user_data', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user_data');
+    }
+    apiClient.setToken(token);
+  };
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      // Start loading
+      dispatch({ type: 'SET_LOADING', payload: true });
+
+      let { token, user } = getStoredAuth();
+
+      if (token && isValidToken(token)) {
+        // Token is valid. Now check user data consistency.
+        if (!user || !user.email) {
+          console.warn('AuthContext: Valid token found but user data is missing or malformed (no email). Clearing user data from localStorage.');
+          localStorage.removeItem('user_data'); // Clear only the user data, keep token if valid
+          user = null; // Ensure user is null for the next step
+        }
+        setLocalAuth(token, user); // Call setLocalAuth with potentially null user
+        dispatch({ type: 'AUTH_INIT', payload: { user, token } });
+      } else {
+        // If token is invalid or not present, clear local storage and set unauthenticated state
+        setLocalAuth(null, null); // Clear any invalid/expired tokens
+        dispatch({ type: 'AUTH_INIT', payload: { user: null, token: null } });
+      }
+      // Set loading to false only after all checks are done
+      dispatch({ type: 'SET_LOADING', payload: false });
+    };
+
+    initializeAuth();
+  }, []); // Empty dependency array means this runs once on mount
 
   const signup = async (credentials: SignupCredentials) => {
     dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_ERROR', payload: null }); // Clear previous errors
 
     try {
       const result = await apiClient.signup(credentials);
@@ -138,13 +162,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (result.data) {
-        const { user, token } = result.data;
-        setToken(token);
-
-        dispatch({
-          type: 'SIGNUP_SUCCESS',
-          payload: { user, token }
-        });
+        // After successful registration, do NOT set auth state or store token.
+        // The user should explicitly log in.
+        // The calling component (e.g., SignupForm) will handle redirection to /login.
       } else {
         throw new Error('Signup failed: No user data returned');
       }
@@ -152,11 +172,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const errorMessage = error.message || 'Signup failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       throw error;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
   const signin = async (credentials: SigninCredentials) => {
     dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_ERROR', payload: null }); // Clear previous errors
 
     try {
       const result = await apiClient.signin(credentials);
@@ -166,12 +189,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (result.data) {
-        const { user, token } = result.data;
-        setToken(token);
+        const { user, access_token, token_type } = result.data;
+        setLocalAuth(access_token, user);
 
         dispatch({
           type: 'SIGNIN_SUCCESS',
-          payload: { user, token }
+          payload: { user, token: access_token },
         });
       } else {
         throw new Error('Signin failed: No user data returned');
@@ -180,19 +203,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const errorMessage = error.message || 'Signin failed';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       throw error;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
   const signout = async () => {
+    dispatch({ type: 'SET_LOADING', payload: true }); // Indicate loading for signout
     try {
-      // Call the API to sign out (this might be needed for server-side session cleanup)
       await apiClient.signout();
     } catch (error) {
-      // Even if the API call fails, we should still clear the local state
       console.error('Signout API call failed:', error);
     } finally {
-      removeToken();
+      setLocalAuth(null, null);
       dispatch({ type: 'SIGNOUT_SUCCESS' });
+      dispatch({ type: 'SET_LOADING', payload: false }); // Done loading after signout
     }
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react'; // Import useEffect
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
@@ -14,14 +14,28 @@ export default function DashboardLayout({
   const { state } = useAuth();
   const router = useRouter();
 
-  // If user is not authenticated, redirect to sign in
+  useEffect(() => {
+    // Redirect only when not loading and not authenticated
+    if (!state.isLoading && !state.isAuthenticated) {
+      router.push('/signin');
+    }
+  }, [state.isAuthenticated, state.isLoading, router]); // Depend on isAuthenticated and isLoading
+
+  if (state.isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl">Loading authentication...</p>
+      </div>
+    );
+  }
+
+  // Only render children if authenticated and not loading
   if (!state.isAuthenticated) {
-    router.push('/signin');
-    return null; // Return null while redirecting
+    return null; // Return null if not authenticated and redirecting
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />

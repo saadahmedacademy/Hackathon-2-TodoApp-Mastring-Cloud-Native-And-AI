@@ -5,7 +5,7 @@ import { useTodos } from '@/hooks/useTodos';
 import TodoList from '@/components/todos/TodoList';
 
 export default function TodosPage() {
-  const { todos, loading, error, refreshTodos } = useTodos();
+  const { todos, loading, error, refreshTodos, toggleTodoCompletionLocally, updateTodoLocally, deleteTodoLocally } = useTodos();
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -25,7 +25,13 @@ export default function TodosPage() {
         </div>
       )}
 
-      <TodoList todos={todos} loading={loading} />
+      <TodoList
+        todos={todos}
+        loading={loading}
+        toggleTodoCompletionLocally={toggleTodoCompletionLocally}
+        updateTodoLocally={updateTodoLocally}
+        deleteTodoLocally={deleteTodoLocally}
+      />
     </div>
   );
 }

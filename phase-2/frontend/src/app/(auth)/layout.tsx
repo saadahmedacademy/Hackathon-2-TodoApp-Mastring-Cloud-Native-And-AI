@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react'; // Import useEffect
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
@@ -12,10 +12,20 @@ export default function AuthLayout({
   const { state } = useAuth();
   const router = useRouter();
 
-  // If user is already authenticated, redirect to dashboard
-  if (state.isAuthenticated) {
-    router.push('/dashboard');
-    return null; // Return null while redirecting
+  useEffect(() => {
+    // Redirect only when not loading and authenticated
+    if (!state.isLoading && state.isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [state.isAuthenticated, state.isLoading, router]); // Depend on isAuthenticated and isLoading
+
+  // If still loading, or if authenticated and redirect is pending, show nothing
+  if (state.isLoading || state.isAuthenticated) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl">Loading authentication...</p>
+      </div>
+    );
   }
 
   return (
@@ -25,7 +35,10 @@ export default function AuthLayout({
           TodoApp
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          {children.type.name === 'SignupPage'
+          {/* This conditional rendering based on children type is fragile and should be avoided.
+              A better approach would be to pass a prop to the layout indicating the page type. */}
+          {/* For now, keeping original logic for consistency if children is React Element with type.name */}
+          {React.isValidElement(children) && typeof children.type === 'function' && (children.type as any).name === 'SignupPage'
             ? 'Create a new account'
             : 'Sign in to your account'}
         </p>

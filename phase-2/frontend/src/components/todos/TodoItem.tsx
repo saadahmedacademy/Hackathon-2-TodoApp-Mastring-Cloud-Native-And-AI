@@ -10,9 +10,12 @@ interface TodoItemProps {
   todo: Todo;
   onUpdate: (updatedTodo: Todo) => void;
   onDelete: (id: string) => void;
+  toggleTodoCompletionLocally?: (id: string, completed: boolean) => Promise<any>;
+  updateTodoLocally?: (id: string, todoData: Partial<Todo>) => Promise<any>;
+  deleteTodoLocally?: (id: string) => Promise<any>;
 }
 
-export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
+export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletionLocally, updateTodoLocally, deleteTodoLocally }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.title);
   const [editDescription, setEditDescription] = useState(todo.description || '');
@@ -23,16 +26,23 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
     setIsLoading(true);
 
     try {
-      const updatedTodo = await apiClient.toggleTodoCompletion(todo.id, !todo.completed);
+      // Use the local function if available, otherwise fall back to direct API call
+      let result;
+      if (toggleTodoCompletionLocally) {
+        result = await toggleTodoCompletionLocally(todo.id, !todo.completed);
+      } else {
+        result = await apiClient.toggleTodo(todo.id, !todo.completed);
 
-      if (updatedTodo.error) {
-        throw new Error(updatedTodo.error);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        if (result.data) {
+          onUpdate(result.data as Todo);
+        }
       }
 
-      if (updatedTodo.data) {
-        onUpdate(updatedTodo.data as Todo);
-        addToast(`Todo "${todo.title}" marked as ${todo.completed ? 'incomplete' : 'complete'}`, 'success');
-      }
+      addToast(`Todo "${todo.title}" marked as ${todo.completed ? 'incomplete' : 'complete'}`, 'success');
     } catch (err: any) {
       addToast(err.message || 'Failed to update todo', 'error');
     } finally {
@@ -44,20 +54,31 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
     setIsLoading(true);
 
     try {
-      const updatedTodo = await apiClient.updateTodo(todo.id, {
-        title: editText,
-        description: editDescription,
-      });
+      // Use the local function if available, otherwise fall back to direct API call
+      let result;
+      if (updateTodoLocally) {
+        result = await updateTodoLocally(todo.id, {
+          title: editText,
+          description: editDescription,
+        });
+      } else {
+        result = await apiClient.updateTodo(
+          todo.id,
+          editText,
+          editDescription
+        );
 
-      if (updatedTodo.error) {
-        throw new Error(updatedTodo.error);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        if (result.data) {
+          onUpdate(result.data as Todo);
+        }
       }
 
-      if (updatedTodo.data) {
-        onUpdate(updatedTodo.data as Todo);
-        setIsEditing(false);
-        addToast('Todo updated successfully', 'success');
-      }
+      setIsEditing(false);
+      addToast('Todo updated successfully', 'success');
     } catch (err: any) {
       addToast(err.message || 'Failed to update todo', 'error');
     } finally {
@@ -70,16 +91,23 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
       setIsLoading(true);
 
       try {
-        const result = await apiClient.deleteTodo(todo.id);
+        // Use the local function if available, otherwise fall back to direct API call
+        let result;
+        if (deleteTodoLocally) {
+          result = await deleteTodoLocally(todo.id);
+        } else {
+          result = await apiClient.deleteTodo(todo.id);
 
-        if (result.error) {
-          throw new Error(result.error);
+          if (result.error) {
+            throw new Error(result.error);
+          }
+
+          if (result.data?.success) {
+            onDelete(todo.id);
+          }
         }
 
-        if (result.data?.success) {
-          onDelete(todo.id);
-          addToast('Todo deleted successfully', 'success');
-        }
+        addToast('Todo deleted successfully', 'success');
       } catch (err: any) {
         addToast(err.message || 'Failed to delete todo', 'error');
       } finally {
@@ -95,20 +123,20 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
   };
 
   return (
-    <div className={`border rounded-lg p-4 mb-3 transition-all ${todo.completed ? 'bg-green-50' : 'bg-white'} ${isLoading ? 'opacity-70' : ''}`}>
+    <div className={`border rounded-lg p-4 mb-3 transition-all duration-200 ${todo.completed ? 'bg-green-50 dark:bg-green-900/20' : 'bg-secondary dark:bg-secondary'} ${isLoading ? 'opacity-70' : ''}`}>
       {isEditing ? (
         <div className="space-y-3">
           <input
             type="text"
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             placeholder="Todo title"
           />
           <textarea
             value={editDescription}
             onChange={(e) => setEditDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-input bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 min-h-[96px] leading-relaxed"
             placeholder="Description (optional)"
             rows={2}
           />
@@ -131,36 +159,37 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
           </div>
         </div>
       ) : (
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-3">
+        <div className="flex items-start justify-between group">
+          <div className="flex items-start space-x-3 flex-1 min-w-0">
             <input
               type="checkbox"
               checked={todo.completed}
               onChange={handleToggleComplete}
               disabled={isLoading}
-              className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="mt-1 h-5 w-5 rounded border border-input bg-background text-primary focus:ring-offset-background focus:ring-2 focus:ring-ring"
               aria-label={todo.completed ? `Mark "${todo.title}" as incomplete` : `Mark "${todo.title}" as complete`}
             />
-            <div>
-              <h3 className={`text-lg font-medium ${todo.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+            <div className="min-w-0 flex-1">
+              <h3 className={`text-lg font-medium truncate ${todo.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}>
                 {todo.title}
               </h3>
               {todo.description && (
-                <p className={`mt-1 text-sm ${todo.completed ? 'line-through text-gray-400' : 'text-gray-500'}`}>
+                <p className={`mt-1 text-sm break-words max-w-full ${todo.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-600 dark:text-gray-300'} group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors`}>
                   {todo.description}
                 </p>
               )}
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 Created: {new Date(todo.createdAt).toLocaleDateString()}
                 {todo.updatedAt !== todo.createdAt && ` • Updated: ${new Date(todo.updatedAt).toLocaleDateString()}`}
               </p>
             </div>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               onClick={() => setIsEditing(true)}
               variant="outline"
               size="sm"
+              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               aria-label={`Edit todo: ${todo.title}`}
             >
               Edit
@@ -169,7 +198,7 @@ export default function TodoItem({ todo, onUpdate, onDelete }: TodoItemProps) {
               onClick={handleDelete}
               variant="outline"
               size="sm"
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
               aria-label={`Delete todo: ${todo.title}`}
             >
               Delete

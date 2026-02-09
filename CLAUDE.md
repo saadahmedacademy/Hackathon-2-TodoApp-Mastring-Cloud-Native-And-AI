@@ -1,4 +1,4 @@
-# Claude Code Rules
+<!-- # Claude Code Rules
 
 This file is generated during init for the selected agent.
 
@@ -258,4 +258,4 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 
 ## Active Technologies
 - TypeScript 5.0+, JavaScript ES2022 + Next.js 16+, React 18+, App Router, Tailwind CSS, axios/fetch API (001-frontend-web-app)
-- Browser localStorage/sessionStorage for auth state persistence (N/A for backend data) (001-frontend-web-app)
+- Browser localStorage/sessionStorage for auth state persistence (N/A for backend data) (001-frontend-web-app) -->

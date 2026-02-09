@@ -208,23 +208,3 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
-
-## Project Context
-
-This is a "Progressive Todo Application" that evolves in phases. The project's constitution is defined in `.specify/memory/constitution.md`.
-
-### Core Philosophy
-- **Phased Development:** The project is built in distinct, self-contained phases.
-- **Clean Architecture:** Strong emphasis on separation of concerns.
-- **Technology Stack Evolution:**
-    - **Phase I:** Pure Python 3.10+ with no external libraries.
-    - **Phase II:** Next.js frontend, FastAPI backend, SQLModel, and Neon PostgreSQL database.
-    - **Future Phases:** Plans to incorporate AI, Docker, Kubernetes, and event-driven architecture.
-
-### Current Status
-- **Phase I (Console App):** Complete. The spec is in `specs/001-console-todo-app`.
-- **Phase II (Web App):** Complete. This phase consists of three main components:
-    1.  **Backend Core (`specs/002-backend-core`):** A FastAPI-based REST API for to-do operations.
-    2.  **Authentication System (`specs/003-auth`):** A JWT-based authentication module using "Better Auth".
-    3.  **Frontend Web App (`specs/001-frontend-web-app`):** A responsive Next.js application for the UI.
-- According to the `tasks.md` files in each spec directory, all implementation tasks for Phases I and II are marked as complete.

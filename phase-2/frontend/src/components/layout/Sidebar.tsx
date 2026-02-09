@@ -16,9 +16,9 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen hidden md:block">
+    <aside className="w-64 bg-background border-r border-border min-h-screen hidden md:block">
       <div className="p-4">
-        <h2 className="text-lg font-semibold text-gray-800">Navigation</h2>
+        <h2 className="text-lg font-semibold text-foreground">Navigation</h2>
         <nav className="mt-6">
           <ul className="space-y-2">
             <li>
@@ -26,8 +26,8 @@ const Sidebar = () => {
                 href="/dashboard"
                 className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
                   isActive('/dashboard') && !isActive('/dashboard/todos') && !isActive('/dashboard/new')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 }`}
               >
                 <span className="ml-3">Dashboard</span>
@@ -38,8 +38,8 @@ const Sidebar = () => {
                 href="/dashboard/todos"
                 className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
                   isActive('/dashboard/todos')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 }`}
               >
                 <span className="ml-3">All Todos</span>
@@ -50,8 +50,8 @@ const Sidebar = () => {
                 href="/dashboard/new"
                 className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg ${
                   isActive('/dashboard/new')
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 }`}
               >
                 <span className="ml-3">Create Todo</span>
@@ -60,10 +60,10 @@ const Sidebar = () => {
           </ul>
         </nav>
 
-        <div className="mt-8 pt-8 border-t border-gray-200">
+        <div className="mt-8 pt-8 border-t border-border">
           <div className="px-4 py-2">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account</p>
-            <p className="mt-1 text-sm text-gray-600 truncate">{state.user?.email}</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Account</p>
+            <p className="mt-1 text-sm text-foreground truncate">{state.user?.email}</p>
           </div>
         </div>
       </div>

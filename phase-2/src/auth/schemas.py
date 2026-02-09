@@ -39,5 +39,14 @@ class UserResponse(BaseModel):
     id: str
     email: str
     name: Optional[str] = None
-    created_at: str
+    created_at: Optional[str]
     email_verified: bool = False
+
+
+class AuthResponse(BaseModel):
+    """Schema for authentication responses containing both user and token info."""
+
+    user: UserResponse
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"

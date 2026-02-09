@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,10 +15,16 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { signin } = useAuth();
+  const { state, signin } = useAuth(); // Destructure state from useAuth
   const router = useRouter();
+
+  useEffect(() => {
+    // Only redirect if authentication is successful AND there's no custom success handler
+    // And only after loading is false (auth state is stable)
+    if (state.isAuthenticated && !onSigninSuccess && !state.isLoading) {
+      router.push('/dashboard');
+    }
+  }, [state.isAuthenticated, state.isLoading, onSigninSuccess, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -63,7 +67,8 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
       return;
     }
 
-    setIsLoading(true);
+    // Set loading state from AuthContext
+    // setIsLoading(true); // No longer needed, AuthContext manages loading
 
     try {
       await signin({
@@ -73,13 +78,12 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
 
       if (onSigninSuccess) {
         onSigninSuccess();
-      } else {
-        router.push('/dashboard');
       }
+      // Redirect logic is now handled by the useEffect above
     } catch (error: any) {
-      setErrors({ form: error.message || 'An error occurred during sign in' });
+      setErrors({ form: error.message || state.error || 'An error occurred during sign in' }); // Use state.error if available
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false); // No longer needed
     }
   };
 
@@ -120,23 +124,23 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 rounded border border-input bg-background text-primary focus:ring-offset-background focus:ring-2 focus:ring-ring"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
               Remember me
             </label>
           </div>
 
           <div className="text-sm">
-            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+            <a href="#" className="font-medium text-primary hover:text-primary/90">
               Forgot your password?
             </a>
           </div>
         </div>
 
         {errors.form && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{errors.form}</div>
+          <div className="rounded-md bg-destructive/10 p-4">
+            <div className="text-sm text-destructive">{errors.form}</div>
           </div>
         )}
 
@@ -144,8 +148,8 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
           <Button
             type="submit"
             fullWidth
-            isLoading={isLoading}
-            className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            isLoading={state.isLoading} // Use state.isLoading from AuthContext
+            className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             Sign in
           </Button>
@@ -153,9 +157,9 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
       </form>
 
       <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Don't have an account?{' '}
-          <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link href="/signup" className="font-medium text-primary hover:text-primary/90">
             Sign up
           </Link>
         </p>

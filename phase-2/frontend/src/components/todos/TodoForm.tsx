@@ -64,17 +64,17 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
       let result;
       if (isEditing && initialTodo?.id) {
         // Update existing todo
-        result = await apiClient.updateTodo(initialTodo.id, {
-          title: formData.title,
-          description: formData.description,
-        });
+        result = await apiClient.updateTodo(
+          initialTodo.id,
+          formData.title,
+          formData.description
+        );
       } else {
         // Create new todo
-        result = await apiClient.createTodo({
-          title: formData.title,
-          description: formData.description,
-          completed: false,
-        });
+        result = await apiClient.createTodo(
+          formData.title,
+          formData.description
+        );
       }
 
       if (result.error) {
@@ -115,7 +115,7 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
             Description (optional)
           </label>
           <textarea
@@ -124,10 +124,9 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
             rows={4}
             value={formData.description}
             onChange={handleChange}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-              errors.description ? 'border-red-500' : ''
-            }`}
-            placeholder="Add details..."
+                      className={`mt-1 block w-full rounded-md border border-input bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[96px] leading-relaxed ${
+                        errors.description ? 'border-destructive text-destructive' : ''
+                      }`}            placeholder="Add details..."
           />
           {errors.description && <p className="mt-2 text-sm text-red-500">{errors.description}</p>}
         </div>

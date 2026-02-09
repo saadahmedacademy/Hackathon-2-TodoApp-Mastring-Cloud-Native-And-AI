@@ -76,7 +76,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       if (onSignupSuccess) {
         onSignupSuccess();
       } else {
-        router.push('/dashboard');
+        router.push('/signin'); // Redirect to signin page after successful registration
       }
     } catch (error: any) {
       setErrors({ form: error.message || 'An error occurred during signup' });
@@ -114,14 +114,14 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
             error={errors.password}
             fullWidth
           />
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             Password must be at least 8 characters
           </p>
         </div>
 
         {errors.form && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{errors.form}</div>
+          <div className="rounded-md bg-destructive/10 p-4">
+            <div className="text-sm text-destructive">{errors.form}</div>
           </div>
         )}
 
@@ -130,7 +130,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
             type="submit"
             fullWidth
             isLoading={isLoading}
-            className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             Sign up
           </Button>
@@ -138,9 +138,9 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       </form>
 
       <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/signin" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link href="/signin" className="font-medium text-primary hover:text-primary/90">
             Sign in
           </Link>
         </p>

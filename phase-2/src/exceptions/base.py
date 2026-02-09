@@ -23,10 +23,10 @@ class TodoNotFoundException(TodoException):
 class TodoValidationError(TodoException):
     """Raised when validation fails for todo operations."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str, status_code: int = 422):
         super().__init__(
             message=message,
-            status_code=422  # Unprocessable Entity
+            status_code=status_code
         )
 
 

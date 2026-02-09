@@ -18,13 +18,14 @@ export interface Todo {
 
 export interface ApiResponse<T> {
   data?: T;
-  error?: string;
+  error?: string | null;
   status: number;
 }
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  access_token: string;
+  token_type: string;
 }
 
 export interface TodoResponse {

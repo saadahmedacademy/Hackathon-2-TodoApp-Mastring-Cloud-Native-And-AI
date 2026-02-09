@@ -1,10 +1,11 @@
 """Authentication router with endpoints for registration, login, and token management."""
 
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import UserRegistration, UserLogin, TokenResponse, TokenRefresh
+from .schemas import UserRegistration, UserLogin, TokenResponse, TokenRefresh, AuthResponse, UserResponse
 from ..services.auth_service import AuthService
 from ..db.session import get_session
 from ..exceptions.base import TodoValidationError
@@ -12,7 +13,7 @@ from ..exceptions.base import TodoValidationError
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     user_data: UserRegistration,
     session: Session = Depends(get_session)
@@ -24,15 +25,30 @@ async def register(
 
         # After registration, also return tokens for immediate login
         login_data = UserLogin(email=user_data.email, password=user_data.password)
-        tokens = auth_service.authenticate_user(login_data)
+        auth_tokens = auth_service.authenticate_user(login_data)
 
-        if not tokens:
+        if not auth_tokens:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Registration successful but could not generate tokens"
             )
 
-        return tokens
+        # Create user response object using the Pydantic model
+        user_response_obj = UserResponse(
+            id=user.id,
+            email=user.email,
+            name=getattr(user, 'name', None),
+            created_at=user.created_at.isoformat() if user.created_at else None,
+            email_verified=getattr(user, 'email_verified', False)
+        )
+
+        # Return both user and token information using the AuthResponse model
+        return AuthResponse(
+            user=user_response_obj,
+            access_token=auth_tokens.access_token,
+            refresh_token=auth_tokens.refresh_token,
+            token_type=auth_tokens.token_type
+        )
     except TodoValidationError as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
     except IntegrityError as e:
@@ -44,14 +60,11 @@ async def register(
                 detail="Email already registered"
             )
         raise HTTPException(status_code=500, detail="Internal server error")
+    except HTTPException:
+        # Re-raise HTTPExceptions untouched
+        raise
     except Exception as e:
-        # Check if this is a database integrity error (like duplicate email)
-        error_msg = str(e).lower()
-        if "duplicate" in error_msg or "unique" in error_msg or "constraint" in error_msg:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered"
-            )
+        logging.error(f"Unhandled error during registration: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
