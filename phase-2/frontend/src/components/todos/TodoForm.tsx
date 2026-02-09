@@ -115,7 +115,7 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-blue-600 mb-1">
             Description (optional)
           </label>
           <textarea
