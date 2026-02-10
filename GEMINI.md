@@ -208,3 +208,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Active Technologies
+- Python 3.10+ + FastAPI (007-refactor-jwt-secret)
+- N/A (Secret management is configuration-based, not persistent storage) (007-refactor-jwt-secret)
+
+## Recent Changes
+- 007-refactor-jwt-secret: Added Python 3.10+ + FastAPI

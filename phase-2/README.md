@@ -38,8 +38,11 @@ The application follows a layered architecture:
 2. Set up environment variables:
    ```bash
    cp .env.example .env
-   # Edit .env with your database connection details
+   # Edit .env with your database connection details, and set SECRET_KEY (or BETTER_AUTH_SECRET)
    ```
+2.a. Configure JWT Secret:
+   Ensure `BETTER_AUTH_SECRET` environment variable is set for JWT operations. If migrating from `AUTH_SECRET_KEY`, replace it with `BETTER_AUTH_SECRET`.
+   Example: `export BETTER_AUTH_SECRET="your_strong_jwt_secret"`
 
 3. Run the application:
    ```bash

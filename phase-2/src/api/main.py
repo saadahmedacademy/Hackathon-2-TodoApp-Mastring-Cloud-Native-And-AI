@@ -43,6 +43,14 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],  # Explicitly allow headers
 )
 
+
+
+# 👇 ADD THIS HERE
+@app.get("/", include_in_schema=False)
+def root():
+    return {"status": "ok", "service": "todo-backend"}
+
+
 # Add authentication middleware
 app.add_middleware(AuthMiddleware)
 

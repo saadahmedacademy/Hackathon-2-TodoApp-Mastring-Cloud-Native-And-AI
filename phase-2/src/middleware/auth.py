@@ -27,12 +27,17 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         # Publicly accessible paths (no auth required)
         PUBLIC_PATHS = {
+            "/",
             "/docs",
             "/openapi.json",
             "/redoc",
             "/favicon.ico",
             "/health",
         }
+
+        # Check for Hugging Face specific probe that includes query parameters
+        if request.url.path == "/" and "logs=container" in request.url.query:
+            return await call_next(request)
 
         # Skip authentication for public paths and auth routes
         if (

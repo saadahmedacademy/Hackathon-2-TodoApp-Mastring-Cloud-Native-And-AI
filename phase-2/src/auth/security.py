@@ -14,7 +14,7 @@ load_dotenv()
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # JWT settings
-SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "fallback_secret_key_for_development")
+SECRET_KEY = os.getenv("BETTER_AUTH_SECRET", "fallback_secret_key_for_development")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
