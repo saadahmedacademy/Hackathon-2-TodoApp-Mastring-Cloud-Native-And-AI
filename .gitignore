@@ -108,3 +108,4 @@ Thumbs.db
 # Local development settings
 settings_local.py
 local_settings.py
+.vercel
