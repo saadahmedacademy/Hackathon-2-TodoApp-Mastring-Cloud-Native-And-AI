@@ -137,34 +137,33 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
           />
         </div>
 
-        <div className="relative"> {/* Added relative positioning */}
-          <Input
-            label="Password"
-            id="password"
-            name="password"
-            type={showPassword ? 'text' : 'password'} // Dynamic type
-            autoComplete="new-password"
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-            fullWidth
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center h-full"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-          >
-            {showPassword ? (
-              <EyeOpenIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            ) : (
-              <EyeClosedIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            )}
-          </button>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Password must be at least 8 characters
-          </p>
-        </div>
+        <Input
+          label="Password"
+          id="password"
+          name="password"
+          type={showPassword ? 'text' : 'password'} // Dynamic type
+          autoComplete="new-password"
+          value={formData.password}
+          onChange={handleChange}
+          error={errors.password}
+          fullWidth
+          rightAdornment={ // Pass toggle button as rightAdornment
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="flex items-center text-sm leading-5"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+                          {showPassword ? (
+                            <EyeOpenIcon className="h-5 w-5 text-yellow-500" />
+                          ) : (
+                            <EyeClosedIcon className="h-5 w-5 text-yellow-500" />
+                          )}            </button>
+          }
+        />
+        <p className="mt-2 text-sm text-muted-foreground">
+          Password must be at least 8 characters
+        </p>
 
         {errors.form && (
           <div className="rounded-md bg-destructive/10 p-4">
