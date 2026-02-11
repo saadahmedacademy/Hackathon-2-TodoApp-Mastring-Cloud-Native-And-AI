@@ -37,15 +37,17 @@ add_logging_middleware(app)
 # Add CORS middleware for frontend integration (before auth middleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend origin
+    allow_origins=[
+        "http://localhost:3000"
+        "https://hk-2-project.vercel.app/"
+        ],  # Frontend origin
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],  # Explicitly allow methods
     allow_headers=["Authorization", "Content-Type"],  # Explicitly allow headers
 )
 
 
-
-# 👇 ADD THIS HERE
+# 👇 ADD this to allow the HaggingFace as a enty point 
 @app.get("/", include_in_schema=False)
 def root():
     return {"status": "ok", "service": "todo-backend"}

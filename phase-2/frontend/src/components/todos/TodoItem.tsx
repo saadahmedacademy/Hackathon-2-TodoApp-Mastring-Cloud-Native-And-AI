@@ -174,13 +174,28 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
                 {todo.title}
               </h3>
               {todo.description && (
-                <p className={`mt-1 text-sm break-words max-w-full ${todo.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-600 dark:text-gray-300'} group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors`}>
+                <p className={`mt-1 text-sm break-words max-w-full ${todo.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'} group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors`}>
                   {todo.description}
                 </p>
               )}
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Created: {new Date(todo.createdAt).toLocaleDateString()}
-                {todo.updatedAt !== todo.createdAt && ` • Updated: ${new Date(todo.updatedAt).toLocaleDateString()}`}
+                {(() => {
+                  const createdDate = todo.createdAt ? new Date(todo.createdAt) : null;
+                  const updatedDate = todo.updatedAt ? new Date(todo.updatedAt) : null;
+
+                  const isValidDate = (date: Date | null) => date && !isNaN(date.getTime());
+
+                  const createdDateStr = isValidDate(createdDate)
+                    ? createdDate!.toLocaleDateString()
+                    : 'N/A';
+
+                  let updatedDateStr = '';
+                  if (isValidDate(updatedDate) && createdDate && updatedDate!.getTime() !== createdDate!.getTime()) {
+                    updatedDateStr = ` • Updated: ${updatedDate!.toLocaleDateString()}`;
+                  }
+
+                  return `Created: ${createdDateStr}${updatedDateStr}`;
+                })()}
               </p>
             </div>
           </div>
