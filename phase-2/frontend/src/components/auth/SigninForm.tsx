@@ -5,37 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
-// SVG Icons for eye open and eye closed
-const EyeOpenIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    {...props}
-  >
-    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-    <path
-      fillRule="evenodd"
-      d="M1.323 11.447C2.811 6.976 7.232 3.75 12 3.75c4.767 0 9.188 3.226 10.677 7.697a11.996 11.996 0 01-21.354 0zM12 17.25a5.25 5.25 0 100-10.5 5.25 5.25 0 000 10.5z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-const EyeClosedIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    {...props}
-  >
-    <path
-      fillRule="evenodd"
-      d="M.323 11.447C4.811 6.976 7.232 3.75 12 3.75c4.767 0 9.188 3.226 10.677 7.697a11.996 11.996 0 01-21.354 0zM12 12.75a1.5 1.5 0 00-1.5 1.5V15h3v-1.5a1.5 1.5 0 00-1.5-1.5zm1.5-3.75h-3a.75.75 0 000 1.5h3a.75.75 0 000-1.5z"
-      clipRule="evenodd"
-    />
-    <path d="M14.618 18.437a5.25 5.25 0 00-7.236-7.236l-1.464-1.464a7.5 7.5 0 0110.164 10.164l-1.464-1.464z" />
-    <path d="M17.25 12a5.25 5.25 0 00-7.236-7.236l-1.464-1.464A7.5 7.5 0 0119.5 13.5h-2.25a.75.75 0 000 1.5H21v-1.5a7.5 7.5 0 00-3.75-6.495V7.5a.75.75 0 000-1.5h-.75z" />
+// SVG Icon for a key
+const KeyIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 11.269 6.612l-2.043 2.044a.75.75 0 01-1.06 0l-1.06-1.06a.75.75 0 010-1.06l2.043-2.043A3.75 3.75 0 018.25 6.75zM15 8.25a3.75 3.75 0 10-5.834 1.66L7.16 7.16a.75.75 0 01.04-.153l.362-.836a.75.75 0 01.812-.515l1.393.284a1.5 1.5 0 001.217-.432l.362-.362a1.5 1.5 0 011.217-.432h.262a.75.75 0 01.75.75v.262a1.5 1.5 0 01-.432 1.217l-.362.362a1.5 1.5 0 00-.432 1.217l.284 1.393a.75.75 0 01-.515.812l-.836.362a.75.75 0 01-.153.04z" clipRule="evenodd" />
   </svg>
 );
 
@@ -150,11 +123,8 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
               className="flex items-center text-sm leading-5"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-                          {showPassword ? (
-                            <EyeOpenIcon className="h-5 w-5 text-yellow-500" />
-                          ) : (
-                            <EyeClosedIcon className="h-5 w-5 text-yellow-500" />
-                          )}            </button>
+              <KeyIcon className="h-5 w-5 text-yellow-500" />
+            </button>
           }
         />
 
