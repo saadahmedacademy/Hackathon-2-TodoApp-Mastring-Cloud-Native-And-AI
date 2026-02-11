@@ -152,13 +152,13 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center h-full"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? (
-              <EyeOpenIcon className="h-5 w-5 text-gray-500" />
+              <EyeOpenIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             ) : (
-              <EyeClosedIcon className="h-5 w-5 text-gray-500" />
+              <EyeClosedIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             )}
           </button>
           <p className="mt-2 text-sm text-muted-foreground">
