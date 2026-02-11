@@ -1,0 +1,113 @@
+import axios from 'axios';
+import { SigninCredentials, SignupCredentials } from '@/types/auth';
+import { ApiResponse, AuthResponse } from '@/types';
+import { Todo } from '@/types';
+
+function normalizeTodo(todo: any): Todo {
+  return {
+    ...todo,
+    createdAt: todo.created_at,
+    updatedAt: todo.updated_at,
+  };
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
+class ApiClient {
+  private _accessToken: string | null = null;
+
+  constructor() {
+    axios.defaults.baseURL = API_BASE_URL;
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors() {
+    axios.interceptors.request.use(config => {
+      if (this._accessToken) {
+        config.headers.Authorization = `Bearer ${this._accessToken}`;
+      }
+      return config;
+    });
+  }
+
+  setToken(token: string | null) {
+    this._accessToken = token;
+  }
+
+  // Auth Endpoints
+  async signup(credentials: SignupCredentials): Promise<ApiResponse<AuthResponse>> {
+    try {
+      const response = await axios.post(`/auth/register`, credentials);
+      return { data: response.data, error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Signup failed', status: error.response?.status || 500 };
+    }
+  }
+
+  async signin(credentials: SigninCredentials): Promise<ApiResponse<AuthResponse>> {
+    try {
+      const response = await axios.post(`/auth/login`, credentials);
+      return { data: response.data, error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Signin failed', status: error.response?.status || 500 };
+    }
+  }
+
+  async signout(): Promise<ApiResponse<any>> {
+    try {
+      // The interceptor will add the token
+      const response = await axios.post(`/auth/logout`);
+      return { data: { success: true }, error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Signout failed', status: error.response?.status || 500 };
+    }
+  }
+
+  // Todo Endpoints
+  async getTodos(): Promise<ApiResponse<Todo[]>> {
+    try {
+      const response = await axios.get(`/api/tasks`);
+      return { data: response.data.map(normalizeTodo), error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Failed to fetch todos', status: error.response?.status || 500 };
+    }
+  }
+
+  async createTodo(title: string, description?: string): Promise<ApiResponse<Todo>> {
+    try {
+      const response = await axios.post(`/api/tasks`, { title, description });
+      return { data: normalizeTodo(response.data), error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Failed to create todo', status: error.response?.status || 500 };
+    }
+  }
+
+  async updateTodo(id: string, title?: string, description?: string, completed?: boolean): Promise<ApiResponse<Todo>> {
+    try {
+      const response = await axios.put(`/api/tasks/${id}`, { title, description, completed });
+      return { data: normalizeTodo(response.data), error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Failed to update todo', status: error.response?.status || 500 };
+    }
+  }
+
+  async deleteTodo(id: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await axios.delete(`/api/tasks/${id}`);
+      return { data: { success: true }, error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Failed to delete todo', status: error.response?.status || 500 };
+    }
+  }
+
+  async toggleTodo(id: string, completed: boolean): Promise<ApiResponse<Todo>> {
+    try {
+      const response = await axios.patch(`/api/tasks/${id}/complete`, { completed });
+      return { data: normalizeTodo(response.data), error: null, status: response.status };
+    } catch (error: any) {
+      return { data: undefined, error: error.response?.data?.detail || 'Failed to toggle todo status', status: error.response?.status || 500 };
+    }
+  }
+}
+
+export const apiClient = new ApiClient();
