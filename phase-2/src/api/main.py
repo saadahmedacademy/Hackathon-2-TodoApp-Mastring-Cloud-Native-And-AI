@@ -47,7 +47,7 @@ app.add_middleware(
 )
 
 
-# 👇 ADD this to allow the HaggingFace as a enty point 
+# # 👇 ADD this to allow the HaggingFace as a enty point 
 @app.get("/", include_in_schema=False)
 def root():
     return {"status": "ok", "service": "todo-backend"}

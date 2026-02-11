@@ -170,15 +170,15 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
               aria-label={todo.completed ? `Mark "${todo.title}" as incomplete` : `Mark "${todo.title}" as complete`}
             />
             <div className="min-w-0 flex-1">
-              <h3 className={`text-lg font-medium truncate ${todo.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}>
+              <h3 className={`text-lg font-medium truncate ${todo.completed ? 'line-through text-gray-700 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}>
                 {todo.title}
               </h3>
               {todo.description && (
-                <p className={`mt-1 text-sm break-words max-w-full ${todo.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'} group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors`}>
+                <p className={`mt-1 text-sm break-words max-w-full ${todo.completed ? 'line-through text-gray-700 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'} group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors`}>
                   {todo.description}
                 </p>
               )}
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-xs text-gray-700 dark:text-gray-400">
                 {(() => {
                   const createdDate = todo.createdAt ? new Date(todo.createdAt) : null;
                   const updatedDate = todo.updatedAt ? new Date(todo.updatedAt) : null;

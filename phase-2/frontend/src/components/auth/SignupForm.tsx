@@ -7,6 +7,40 @@ import { useAuth } from '@/hooks/useAuth';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
+// SVG Icons for eye open and eye closed (duplicate from SigninForm for self-containment)
+const EyeOpenIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    {...props}
+  >
+    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+    <path
+      fillRule="evenodd"
+      d="M1.323 11.447C2.811 6.976 7.232 3.75 12 3.75c4.767 0 9.188 3.226 10.677 7.697a11.996 11.996 0 01-21.354 0zM12 17.25a5.25 5.25 0 100-10.5 5.25 5.25 0 000 10.5z"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+const EyeClosedIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M.323 11.447C4.811 6.976 7.232 3.75 12 3.75c4.767 0 9.188 3.226 10.677 7.697a11.996 11.996 0 01-21.354 0zM12 12.75a1.5 1.5 0 00-1.5 1.5V15h3v-1.5a1.5 1.5 0 00-1.5-1.5zm1.5-3.75h-3a.75.75 0 000 1.5h3a.75.75 0 000-1.5z"
+      clipRule="evenodd"
+    />
+    <path d="M14.618 18.437a5.25 5.25 0 00-7.236-7.236l-1.464-1.464a7.5 7.5 0 0110.164 10.164l-1.464-1.464z" />
+    <path d="M17.25 12a5.25 5.25 0 00-7.236-7.236l-1.464-1.464A7.5 7.5 0 0119.5 13.5h-2.25a.75.75 0 000 1.5H21v-1.5a7.5 7.5 0 00-3.75-6.495V7.5a.75.75 0 000-1.5h-.75z" />
+  </svg>
+);
+
 interface SignupFormProps {
   onSignupSuccess?: () => void;
 }
@@ -18,6 +52,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   const { signup } = useAuth();
   const router = useRouter();
@@ -102,18 +137,30 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
           />
         </div>
 
-        <div>
+        <div className="relative"> {/* Added relative positioning */}
           <Input
             label="Password"
             id="password"
             name="password"
-            type="password"
+            type={showPassword ? 'text' : 'password'} // Dynamic type
             autoComplete="new-password"
             value={formData.password}
             onChange={handleChange}
             error={errors.password}
             fullWidth
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? (
+              <EyeOpenIcon className="h-5 w-5 text-gray-500" />
+            ) : (
+              <EyeClosedIcon className="h-5 w-5 text-gray-500" />
+            )}
+          </button>
           <p className="mt-2 text-sm text-muted-foreground">
             Password must be at least 8 characters
           </p>
