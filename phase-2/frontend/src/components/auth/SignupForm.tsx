@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -81,8 +81,13 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       return;
     }
 
+    // Clear any previous form error
+    const { form, ...fieldErrors } = errors;
+    if (form) {
+      setErrors(fieldErrors);
+    }
+
     setIsLoading(true);
-    setErrors({}); // Clear previous errors
 
     try {
       await signup({
@@ -97,9 +102,14 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         router.push('/signin'); // Redirect to signin page after successful registration
       }
     } catch (error: any) {
-      // Handle different HTTP error codes
+      console.error('Signup error:', error); // Debug logging
+
+      // Extract error details
       const status = error.response?.status;
       const backendMessage = error.response?.data?.detail || error.response?.data?.message;
+
+      console.log('Error status:', status); // Debug logging
+      console.log('Backend message:', backendMessage); // Debug logging
 
       let errorMessage = 'An error occurred during signup';
 
@@ -109,7 +119,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       } else if (status === 400) {
         // Bad request - use backend validation message if available
         errorMessage = backendMessage || 'Invalid input. Please check your data.';
-      } else if (status === 500) {
+      } else if (status === 500 || status >= 500) {
         // Server error
         errorMessage = 'Something went wrong. Please try again.';
       } else if (backendMessage) {
@@ -120,7 +130,8 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         errorMessage = error.message;
       }
 
-      setErrors({ form: errorMessage });
+      console.log('Setting error message:', errorMessage); // Debug logging
+      setErrors(prev => ({ ...prev, form: errorMessage }));
       // Do NOT redirect on error
     } finally {
       setIsLoading(false);
