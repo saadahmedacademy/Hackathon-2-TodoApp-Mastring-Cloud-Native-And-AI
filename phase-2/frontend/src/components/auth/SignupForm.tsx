@@ -82,6 +82,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
     }
 
     setIsLoading(true);
+    setErrors({}); // Clear previous errors
 
     try {
       await signup({
@@ -89,13 +90,38 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         password: formData.password,
       });
 
+      // Only redirect on successful signup
       if (onSignupSuccess) {
         onSignupSuccess();
       } else {
         router.push('/signin'); // Redirect to signin page after successful registration
       }
     } catch (error: any) {
-      setErrors({ form: error.message || 'An error occurred during signup' });
+      // Handle different HTTP error codes
+      const status = error.response?.status;
+      const backendMessage = error.response?.data?.detail || error.response?.data?.message;
+
+      let errorMessage = 'An error occurred during signup';
+
+      if (status === 409) {
+        // Email already exists
+        errorMessage = 'Email is already registered.';
+      } else if (status === 400) {
+        // Bad request - use backend validation message if available
+        errorMessage = backendMessage || 'Invalid input. Please check your data.';
+      } else if (status === 500) {
+        // Server error
+        errorMessage = 'Something went wrong. Please try again.';
+      } else if (backendMessage) {
+        // Use backend message if available
+        errorMessage = backendMessage;
+      } else if (error.message) {
+        // Fallback to error message
+        errorMessage = error.message;
+      }
+
+      setErrors({ form: errorMessage });
+      // Do NOT redirect on error
     } finally {
       setIsLoading(false);
     }

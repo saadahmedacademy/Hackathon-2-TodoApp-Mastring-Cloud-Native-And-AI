@@ -64,8 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         window.location.href = '/dashboard';
       }, 100);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || error.message || 'Signup failed';
-      throw new Error(errorMessage);
+      // Preserve the original axios error so forms can access status codes
+      throw error;
     } finally {
       setLocalLoading(false);
     }
