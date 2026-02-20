@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+  title: AI Orchestrator Chat API
+  version: 1.0.0
+  description: API for managing AI-driven conversations.
+
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Send a message to an AI agent and get a response.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  description: Optional. ID of an existing conversation to continue. If not provided, a new conversation is started.
+                message:
+                  type: string
+                  description: The user's message to the AI agent.
+              required:
+                - message
+      responses:
+        '200':
+          description: Successful response from the AI agent.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    format: uuid
+                    description: The ID of the conversation.
+                  user_message_id:
+                    type: string
+                    format: uuid
+                    description: The ID of the user's message.
+                  assistant_message_id:
+                    type: string
+                    format: uuid
+                    description: The ID of the assistant's response message.
+                  assistant_response:
+                    type: string
+                    description: The AI agent's textual response.
+                  tasks_performed:
+                    type: array
+                    items:
+                      type: string
+                    description: Optional. A list of descriptions or IDs of tasks performed by the agent during this interaction.
+                required:
+                  - conversation_id
+                  - user_message_id
+                  - assistant_message_id
+                  - assistant_response
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation of the error.
+        error_code:
+          type: string
+          description: A unique code identifying the type of error.

@@ -2,39 +2,50 @@ import axios from 'axios';
 import { SigninCredentials, SignupCredentials } from '@/types/auth';
 import { ApiResponse, AuthResponse } from '@/types';
 import { Todo } from '@/types';
+import { getAccessToken } from '@/hooks/useSession';
 
 function normalizeTodo(todo: any): Todo {
   return {
     ...todo,
     createdAt: todo.created_at,
     updatedAt: todo.updated_at,
+    display_id: todo.display_id ?? undefined,
   };
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 class ApiClient {
-  private _accessToken: string | null = null;
-
   constructor() {
     axios.defaults.baseURL = API_BASE_URL;
     this.setupInterceptors();
   }
 
   private setupInterceptors() {
+    // Inject token from session (in-memory)
     axios.interceptors.request.use(config => {
-      if (this._accessToken) {
-        config.headers.Authorization = `Bearer ${this._accessToken}`;
+      const token = getAccessToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     });
+
+    // Handle 401 responses
+    axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response?.status === 401) {
+          // Session expired - redirect to signin
+          console.warn('Unauthorized - session expired');
+          window.location.href = '/signin';
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
-  setToken(token: string | null) {
-    this._accessToken = token;
-  }
-
-  // Auth Endpoints
+  // Auth Endpoints (legacy - use AuthContext methods instead)
   async signup(credentials: SignupCredentials): Promise<ApiResponse<AuthResponse>> {
     try {
       const response = await axios.post(`/auth/register`, credentials);
@@ -55,7 +66,6 @@ class ApiClient {
 
   async signout(): Promise<ApiResponse<any>> {
     try {
-      // The interceptor will add the token
       const response = await axios.post(`/auth/logout`);
       return { data: { success: true }, error: null, status: response.status };
     } catch (error: any) {
@@ -66,10 +76,28 @@ class ApiClient {
   // Todo Endpoints
   async getTodos(): Promise<ApiResponse<Todo[]>> {
     try {
-      const response = await axios.get(`/api/tasks`);
-      return { data: response.data.map(normalizeTodo), error: null, status: response.status };
+      // Use Next.js proxy with token from session
+      const token = getAccessToken();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/todos', { headers });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        return {
+          data: undefined,
+          error: err?.error || err?.detail || 'Failed to fetch todos',
+          status: response.status,
+        };
+      }
+
+      const data = await response.json();
+      return { data: Array.isArray(data) ? data.map(normalizeTodo) : [], error: null, status: response.status };
     } catch (error: any) {
-      return { data: undefined, error: error.response?.data?.detail || 'Failed to fetch todos', status: error.response?.status || 500 };
+      return { data: undefined, error: 'Failed to fetch todos', status: 500 };
     }
   }
 

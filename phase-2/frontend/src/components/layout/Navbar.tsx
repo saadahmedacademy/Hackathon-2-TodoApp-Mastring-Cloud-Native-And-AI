@@ -8,7 +8,12 @@ import { useDarkMode } from '@/contexts/DarkModeContext';
 import Button from '@/components/ui/Button';
 import { MoonIcon, SunIcon } from 'lucide-react';
 
-const Navbar = () => {
+interface NavbarProps {
+  onChatToggle?: () => void;
+  chatOpen?: boolean;
+}
+
+const Navbar = ({ onChatToggle, chatOpen }: NavbarProps) => {
   const pathname = usePathname();
   const { state, signout } = useAuth();
   const { darkMode, toggleDarkMode } = useDarkMode();
@@ -48,6 +53,22 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Chat toggle button — only shown when authenticated */}
+          {state.isAuthenticated && onChatToggle && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onChatToggle}
+              className={`p-2 rounded-full hover:bg-accent ${chatOpen ? 'bg-accent' : ''}`}
+              aria-label={chatOpen ? 'Close AI chat' : 'Open AI chat'}
+              aria-expanded={chatOpen}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+            </Button>
+          )}
+
           {/* Dark mode toggle button */}
           <Button
             variant="ghost"

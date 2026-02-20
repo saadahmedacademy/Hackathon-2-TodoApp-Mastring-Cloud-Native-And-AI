@@ -45,6 +45,17 @@ export const useTodos = () => {
     fetchTodos();
   }, [authState.isAuthenticated, authState.isLoading]); // Depend on auth state
 
+  // Refetch when the AI chat agent modifies todos
+  useEffect(() => {
+    const handler = () => {
+      if (authState.isAuthenticated && !authState.isLoading) {
+        fetchTodos();
+      }
+    };
+    window.addEventListener('todos-updated', handler);
+    return () => window.removeEventListener('todos-updated', handler);
+  }, [authState.isAuthenticated, authState.isLoading]);
+
   const refreshTodos = () => {
     fetchTodos();
   };

@@ -1,0 +1,36 @@
+[project]
+name = "phase-3"
+version = "0.1.0"
+description = "Phase 3 Backend AI Orchestrator"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{name = "Gemini CLI", email = "gemini@example.com"}]
+dependencies = [
+    "fastapi~=0.109.0",
+    "uvicorn~=0.27.0",
+    "sqlmodel~=0.0.16",
+    "psycopg2-binary~=2.9.9",
+    "alembic~=1.13.1",
+    "openai~=2.19.0",
+    "openai-agents",
+    "httpx~=0.26.0",
+    "python-dotenv~=1.0.1",
+    "asyncpg~=0.29.0",
+    "pydantic-settings~=2.0", # Added pydantic-settings
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.flake8]
+max-line-length = 100
+exclude = [".venv", "venv", "alembic", "__pycache__"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.setuptools]
+packages = ["src"]

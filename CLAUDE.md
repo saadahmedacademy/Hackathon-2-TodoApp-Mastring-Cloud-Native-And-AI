@@ -253,9 +253,8 @@ Transform the console todo app into a modern multi-user web application with per
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
+- 007-refactor-jwt-secret: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 001-frontend-web-app: Added TypeScript 5.0+, JavaScript ES2022 + Next.js 16+, React 18+, App Router, Tailwind CSS, axios/fetch API
 - 003-auth: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 ## Active Technologies
-- TypeScript 5.0+, JavaScript ES2022 + Next.js 16+, React 18+, App Router, Tailwind CSS, axios/fetch API (001-frontend-web-app)
-- Browser localStorage/sessionStorage for auth state persistence (N/A for backend data) (001-frontend-web-app) -->

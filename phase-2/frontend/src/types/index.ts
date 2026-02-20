@@ -8,6 +8,8 @@ export interface User {
 
 export interface Todo {
   id: string;
+  /** Per-user sequential display number (e.g. 1, 2, 3). Added by Phase-3. */
+  display_id?: number;
   title: string;
   description?: string;
   completed: boolean;

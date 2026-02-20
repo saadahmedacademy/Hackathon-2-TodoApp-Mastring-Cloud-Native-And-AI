@@ -171,6 +171,9 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
             />
             <div className="min-w-0 flex-1">
               <h3 className={`text-lg font-medium truncate ${todo.completed ? 'line-through text-gray-700 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}>
+                <span className="inline-block mr-2 text-sm font-mono text-muted-foreground">
+                  [{todo.display_id ?? '?'}]
+                </span>
                 {todo.title}
               </h3>
               {todo.description && (

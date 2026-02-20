@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: AI Orchestrator MCP Tools API
+  version: 1.0.0
+  description: API for managing tasks via AI agent's MCP tools.
+
+paths:
+  /api/tasks/{user_id}/add:
+    post:
+      summary: Add a new task for a user.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: Description of the task to be added.
+                due_date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Optional due date for the task.
+              required:
+                - description
+      responses:
+        '200':
+          description: Task added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task_id:
+                    type: string
+                    format: uuid
+                    description: The ID of the newly created task.
+                  status:
+                    type: string
+                    enum: [pending, in_progress, completed, cancelled]
+                    description: Current status of the task.
+                required:
+                  - task_id
+                  - status
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/tasks/{user_id}/list:
+    get:
+      summary: List all tasks for a user.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the user.
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, in_progress, completed, cancelled]
+          description: Optional. Filter tasks by status.
+      responses:
+        '200':
+          description: List of tasks for the user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/tasks/{user_id}/complete/{task_id}:
+    post:
+      summary: Mark a task as completed.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the user.
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the task to complete.
+      responses:
+        '200':
+          description: Task marked as completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/tasks/{user_id}/delete/{task_id}:
+    delete:
+      summary: Delete a task.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the user.
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the task to delete.
+      responses:
+        '204':
+          description: Task deleted successfully.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/tasks/{user_id}/update/{task_id}:
+    put:
+      summary: Update an existing task.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the user.
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of the task to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  nullable: true
+                  description: New description for the task.
+                status:
+                  type: string
+                  enum: [pending, in_progress, completed, cancelled]
+                  nullable: true
+                  description: New status for the task.
+                due_date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: New due date for the task.
+              minProperties: 1
+      responses:
+        '200':
+          description: Task updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - user_id
+        - description
+        - status
+        - created_at
+        - updated_at
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: A human-readable explanation of the error.
+        error_code:
+          type: string
+          description: A unique code identifying the type of error.
+  responses:
+    BadRequest:
+      description: Invalid request payload or parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: The specified resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

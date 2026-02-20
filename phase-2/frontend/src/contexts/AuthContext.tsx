@@ -1,228 +1,137 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useSession, setSessionData, clearSessionData } from '@/hooks/useSession';
 import { AuthState, AuthContextType, SignupCredentials, SigninCredentials } from '@/types/auth';
 import { User } from '@/types';
-import { apiClient } from '@/lib/api';
-import { isValidToken } from '@/lib/auth';
+import axios from 'axios';
 
-// Initial state
-const initialState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  token: null,
-  isLoading: true,
-  error: null,
-};
+/**
+ * AuthContext - Session-based auth using sessionStorage
+ * Works with existing FastAPI backend endpoints
+ */
 
-// Action types
-type AuthAction =
-  | { type: 'AUTH_INIT'; payload: { user: User | null; token: string | null } }
-  | { type: 'SIGNUP_SUCCESS'; payload: { user: User; token: string } }
-  | { type: 'SIGNIN_SUCCESS'; payload: { user: User; token: string } }
-  | { type: 'SIGNOUT_SUCCESS' }
-  | { type: 'UPDATE_USER'; payload: Partial<User> }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null };
-
-// Reducer
-const authReducer = (state: AuthState, action: AuthAction): AuthState => {
-  switch (action.type) {
-    case 'AUTH_INIT':
-      const hasValidUser = action.payload.user && action.payload.user.email; // Keep for now as context, but not used in isAuthenticated directly.
-      return {
-        ...state,
-        isAuthenticated: !!action.payload.token && isValidToken(action.payload.token),
-        user: action.payload.user,
-        token: action.payload.token,
-        isLoading: false,
-        error: null,
-      };
-    case 'SIGNUP_SUCCESS':
-      return {
-        ...state,
-        isAuthenticated: true,
-        user: action.payload.user,
-        token: action.payload.token,
-        isLoading: false,
-        error: null,
-      };
-    case 'SIGNIN_SUCCESS':
-      return {
-        ...state,
-        isAuthenticated: true,
-        user: action.payload.user,
-        token: action.payload.token,
-        isLoading: false,
-        error: null,
-      };
-    case 'SIGNOUT_SUCCESS':
-      return {
-        ...state,
-        isAuthenticated: false,
-        user: null,
-        token: null,
-        error: null,
-      };
-    case 'UPDATE_USER':
-      return {
-        ...state,
-        user: state.user ? { ...state.user, ...action.payload } : null,
-      };
-    case 'SET_LOADING':
-      return {
-        ...state,
-        isLoading: action.payload,
-      };
-    case 'SET_ERROR':
-      return {
-        ...state,
-        error: action.payload,
-        isLoading: false,
-      };
-    default:
-      return state;
-  }
-};
-
-// Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Provider component
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  // Use custom session hook
+  const sessionHook = useSession();
+  const [localLoading, setLocalLoading] = useState(false);
 
-
-  const getStoredAuth = (): { token: string | null; user: User | null } => {
-    const token = localStorage.getItem('jwt_token');
-    const userData = localStorage.getItem('user_data');
-    let user: User | null = null;
-    if (userData) {
-      try {
-        user = JSON.parse(userData);
-      } catch (e) {
-        console.error("Failed to parse stored user data:", e);
-        localStorage.removeItem('user_data');
-      }
-    }
-    return { token, user };
-  };
-
-  const setLocalAuth = (token: string | null, user: User | null) => {
-    if (token) {
-      localStorage.setItem('jwt_token', token);
-    } else {
-      localStorage.removeItem('jwt_token');
-    }
-    if (user) {
-      localStorage.setItem('user_data', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('user_data');
-    }
-    apiClient.setToken(token);
-  };
+  // Re-render when session changes
+  const [, setRefresh] = useState(0);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      // Start loading
-      dispatch({ type: 'SET_LOADING', payload: true });
-
-      let { token, user } = getStoredAuth();
-
-      if (token && isValidToken(token)) {
-        // Token is valid. Now check user data consistency.
-        if (!user || !user.email) {
-          console.warn('AuthContext: Valid token found but user data is missing or malformed (no email). Clearing user data from localStorage.');
-          localStorage.removeItem('user_data'); // Clear only the user data, keep token if valid
-          user = null; // Ensure user is null for the next step
-        }
-        setLocalAuth(token, user); // Call setLocalAuth with potentially null user
-        dispatch({ type: 'AUTH_INIT', payload: { user, token } });
-      } else {
-        // If token is invalid or not present, clear local storage and set unauthenticated state
-        setLocalAuth(null, null); // Clear any invalid/expired tokens
-        dispatch({ type: 'AUTH_INIT', payload: { user: null, token: null } });
-      }
-      // Set loading to false only after all checks are done
-      dispatch({ type: 'SET_LOADING', payload: false });
+    const handleSessionChange = () => {
+      setRefresh(prev => prev + 1);
     };
 
-    initializeAuth();
-  }, []); // Empty dependency array means this runs once on mount
+    window.addEventListener('session-changed', handleSessionChange);
+    return () => window.removeEventListener('session-changed', handleSessionChange);
+  }, []);
 
+  // Derive auth state from session
+  const state: AuthState = {
+    isAuthenticated: !!sessionHook.data?.user,
+    user: sessionHook.data?.user || null,
+    token: null,
+    isLoading: sessionHook.isPending || localLoading,
+    error: sessionHook.error?.message || null,
+  };
+
+  /**
+   * Signup - calls /auth/register endpoint
+   * Returns: { user, access_token, refresh_token }
+   */
   const signup = async (credentials: SignupCredentials) => {
-    dispatch({ type: 'SET_LOADING', payload: true });
-    dispatch({ type: 'SET_ERROR', payload: null }); // Clear previous errors
-
+    setLocalLoading(true);
     try {
-      const result = await apiClient.signup(credentials);
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+        email: credentials.email,
+        password: credentials.password,
+        name: credentials.email.split('@')[0],
+      });
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
+      const { user, access_token, refresh_token } = response.data;
 
-      if (result.data) {
-        // After successful registration, do NOT set auth state or store token.
-        // The user should explicitly log in.
-        // The calling component (e.g., SignupForm) will handle redirection to /login.
-      } else {
-        throw new Error('Signup failed: No user data returned');
-      }
+      // Store session
+      setSessionData(user, access_token, refresh_token);
+
+      // Redirect using Next.js router (no full reload)
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 100);
     } catch (error: any) {
-      const errorMessage = error.message || 'Signup failed';
-      dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      throw error;
+      const errorMessage = error.response?.data?.detail || error.message || 'Signup failed';
+      throw new Error(errorMessage);
     } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
+      setLocalLoading(false);
     }
   };
 
+  /**
+   * Signin - calls /auth/login endpoint
+   * Returns: { access_token, refresh_token } (NO USER!)
+   * We need to decode JWT to get user info
+   */
   const signin = async (credentials: SigninCredentials) => {
-    dispatch({ type: 'SET_LOADING', payload: true });
-    dispatch({ type: 'SET_ERROR', payload: null }); // Clear previous errors
-
+    setLocalLoading(true);
     try {
-      const result = await apiClient.signin(credentials);
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        email: credentials.email,
+        password: credentials.password,
+      });
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
+      const { access_token, refresh_token } = response.data;
 
-      if (result.data) {
-        const { user, access_token, token_type } = result.data;
-        setLocalAuth(access_token, user);
+      // Decode JWT to get user ID (basic decode)
+      const payload = JSON.parse(atob(access_token.split('.')[1]));
 
-        dispatch({
-          type: 'SIGNIN_SUCCESS',
-          payload: { user, token: access_token },
-        });
-      } else {
-        throw new Error('Signin failed: No user data returned');
-      }
+      // Create user object from JWT and credentials
+      const user: User = {
+        id: payload.sub || payload.user_id,
+        email: credentials.email,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Store session
+      setSessionData(user, access_token, refresh_token);
+
+      // Redirect
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 100);
     } catch (error: any) {
-      const errorMessage = error.message || 'Signin failed';
-      dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      throw error;
+      const errorMessage = error.response?.data?.detail || error.message || 'Signin failed';
+      throw new Error(errorMessage);
     } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
+      setLocalLoading(false);
     }
   };
 
+  /**
+   * Signout - calls /auth/logout endpoint
+   */
   const signout = async () => {
-    dispatch({ type: 'SET_LOADING', payload: true }); // Indicate loading for signout
     try {
-      await apiClient.signout();
+      await axios.post(`${API_BASE_URL}/auth/logout`);
     } catch (error) {
-      console.error('Signout API call failed:', error);
+      console.error('Logout API failed:', error);
     } finally {
-      setLocalAuth(null, null);
-      dispatch({ type: 'SIGNOUT_SUCCESS' });
-      dispatch({ type: 'SET_LOADING', payload: false }); // Done loading after signout
+      // Clear session
+      clearSessionData();
+      // Redirect to signin
+      window.location.href = '/signin';
     }
   };
 
+  /**
+   * Update user
+   */
   const updateUser = (userData: Partial<User>) => {
-    dispatch({ type: 'UPDATE_USER', payload: userData });
+    console.warn('updateUser not implemented');
   };
 
   const value = {
@@ -237,4 +146,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export { AuthContext };
-

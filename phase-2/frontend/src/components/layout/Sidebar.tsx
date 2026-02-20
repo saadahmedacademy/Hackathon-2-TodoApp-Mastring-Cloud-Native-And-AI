@@ -63,7 +63,11 @@ const Sidebar = () => {
         <div className="mt-8 pt-8 border-t border-border">
           <div className="px-4 py-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Account</p>
-            <p className="mt-1 text-sm text-foreground truncate">{state.user?.email}</p>
+            {state.isLoading ? (
+              <div className="mt-1 h-5 w-32 bg-muted animate-pulse rounded"></div>
+            ) : (
+              <p className="mt-1 text-sm text-foreground truncate">{state.user?.email || 'Not available'}</p>
+            )}
           </div>
         </div>
       </div>
