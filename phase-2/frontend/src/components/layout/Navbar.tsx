@@ -6,14 +6,15 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import Button from '@/components/ui/Button';
-import { MoonIcon, SunIcon } from 'lucide-react';
+import { MoonIcon, SunIcon, MenuIcon } from 'lucide-react';
 
 interface NavbarProps {
   onChatToggle?: () => void;
   chatOpen?: boolean;
+  onMenuToggle?: () => void;
 }
 
-const Navbar = ({ onChatToggle, chatOpen }: NavbarProps) => {
+const Navbar = ({ onChatToggle, chatOpen, onMenuToggle }: NavbarProps) => {
   const pathname = usePathname();
   const { state, signout } = useAuth();
   const { darkMode, toggleDarkMode } = useDarkMode();
@@ -23,13 +24,26 @@ const Navbar = ({ onChatToggle, chatOpen }: NavbarProps) => {
   return (
     <nav className="bg-background border-b border-border text-foreground px-4 py-3">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="flex items-center space-x-10">
+        <div className="flex items-center space-x-4">
+          {/* Hamburger menu button - only visible on mobile/tablet when authenticated */}
+          {state.isAuthenticated && onMenuToggle && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMenuToggle}
+              className="lg:hidden p-2 rounded-md hover:bg-accent"
+              aria-label="Open menu"
+            >
+              <MenuIcon className="h-6 w-6 text-foreground" />
+            </Button>
+          )}
+
           <Link href="/" className="text-xl font-bold text-primary">
             TodoApp
           </Link>
 
           {state.isAuthenticated && (
-            <div className="hidden md:flex space-x-8">
+            <div className="hidden md:flex space-x-8 ml-6">
               <Link
                 href="/dashboard"
                 className={`font-medium ${isActive('/dashboard') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
@@ -52,7 +66,7 @@ const Navbar = ({ onChatToggle, chatOpen }: NavbarProps) => {
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Chat toggle button — only shown when authenticated */}
           {state.isAuthenticated && onChatToggle && (
             <Button
@@ -86,19 +100,20 @@ const Navbar = ({ onChatToggle, chatOpen }: NavbarProps) => {
 
           {state.isAuthenticated ? (
             <>
-              <span className="text-sm text-muted-foreground hidden sm:inline">
+              <span className="text-sm text-muted-foreground hidden md:inline">
                 Welcome, {state.user?.email}
               </span>
-                              <Button
-                                onClick={signout}
-                                variant="outline"
-                                size="sm"
-                                className="border-input text-foreground hover:bg-accent"
-                              >                Logout
+              <Button
+                onClick={signout}
+                variant="outline"
+                size="sm"
+                className="border-input text-foreground hover:bg-accent"
+              >
+                Logout
               </Button>
             </>
           ) : (
-            <div className="flex space-x-3">
+            <div className="flex space-x-2 sm:space-x-3">
               <Link href="/signin">
                 <Button
                   variant="outline"

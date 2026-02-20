@@ -22,10 +22,12 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State for confirm password visibility
 
   const { signup } = useAuth();
   const router = useRouter();
@@ -60,6 +62,12 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match.';
     }
 
     setErrors(newErrors);
@@ -126,6 +134,28 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
               onClick={() => setShowPassword(!showPassword)}
               className="flex items-center text-sm leading-5"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              <KeyIcon className="h-5 w-5 text-yellow-500" />
+            </button>
+          }
+        />
+
+        <Input
+          label="Confirm Password"
+          id="confirmPassword"
+          name="confirmPassword"
+          type={showConfirmPassword ? 'text' : 'password'} // Dynamic type
+          autoComplete="new-password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          error={errors.confirmPassword}
+          fullWidth
+          rightAdornment={ // Pass toggle button as rightAdornment
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="flex items-center text-sm leading-5"
+              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
             >
               <KeyIcon className="h-5 w-5 text-yellow-500" />
             </button>

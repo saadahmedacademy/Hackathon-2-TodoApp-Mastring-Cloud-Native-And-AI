@@ -16,6 +16,7 @@ export default function DashboardLayout({
   const { state } = useAuth();
   const router = useRouter();
   const [chatOpen, setChatOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Redirect only when not loading and not authenticated
@@ -40,10 +41,14 @@ export default function DashboardLayout({
   return (
     <ChatContext.Provider value={{ openChat: () => setChatOpen(true) }}>
       <div className="min-h-screen bg-background">
-        <Navbar onChatToggle={() => setChatOpen((o) => !o)} chatOpen={chatOpen} />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-4 sm:p-6 md:p-8">
+        <Navbar
+          onChatToggle={() => setChatOpen((o) => !o)}
+          chatOpen={chatOpen}
+          onMenuToggle={() => setSidebarOpen((o) => !o)}
+        />
+        <div className="flex overflow-hidden">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-x-hidden">
             {children}
           </main>
         </div>
