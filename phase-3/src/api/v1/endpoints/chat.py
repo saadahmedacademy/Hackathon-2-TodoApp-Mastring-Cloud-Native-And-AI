@@ -26,6 +26,7 @@ def get_ai_agent() -> AIAgentBase:
     from src.mcp.tools.list_tasks import list_tasks_tool_schema
     from src.mcp.tools.complete_task import complete_task_tool_schema
     from src.mcp.tools.delete_task import delete_task_tool_schema
+    from src.mcp.tools.delete_all_tasks import DELETE_ALL_TASKS_SCHEMA
     from src.mcp.tools.update_task import update_task_tool_schema
 
     agent = AIAgentBase()
@@ -34,6 +35,7 @@ def get_ai_agent() -> AIAgentBase:
         list_tasks_tool_schema,
         complete_task_tool_schema,
         delete_task_tool_schema,
+        DELETE_ALL_TASKS_SCHEMA,
         update_task_tool_schema,
     ]:
         agent.tools.append(schema)

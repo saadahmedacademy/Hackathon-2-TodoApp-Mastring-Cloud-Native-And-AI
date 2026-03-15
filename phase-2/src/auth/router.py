@@ -57,7 +57,7 @@ async def register(
         if "duplicate" in error_msg or "unique" in error_msg or "constraint" in error_msg:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered"
+                detail="This email is already in use. Please use a different email or sign in."
             )
         raise HTTPException(status_code=500, detail="Internal server error")
     except HTTPException:

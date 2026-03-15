@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 interface ToastProps {
   message: string;
@@ -10,42 +11,130 @@ interface ToastProps {
 }
 
 export default function Toast({ message, type = 'info', duration = 5000, onClose }: ToastProps) {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [progress, setProgress] = useState(100);
 
   useEffect(() => {
+    // Slide in animation
+    setTimeout(() => setIsVisible(true), 10);
+
+    // Progress bar animation
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
+      setProgress(remaining);
+    }, 50);
+
+    // Auto-close
     if (duration > 0) {
       const timer = setTimeout(() => {
-        setIsVisible(false);
-        if (onClose) onClose();
+        handleClose();
       }, duration);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        clearInterval(interval);
+      };
     }
-  }, [duration, onClose]);
 
-  if (!isVisible) return null;
+    return () => clearInterval(interval);
+  }, [duration]);
 
-  const typeStyles = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    warning: 'bg-yellow-500',
-    info: 'bg-blue-500',
+  const handleClose = () => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      if (onClose) onClose();
+    }, 300);
   };
 
+  if (!isVisible && !isLeaving) return null;
+
+  const typeConfig = {
+    success: {
+      icon: CheckCircle2,
+      bg: 'bg-black',
+      border: 'border-green-500',
+      text: 'text-green-400',
+      iconColor: 'text-green-500',
+      progressBg: 'bg-green-500',
+      shadow: 'shadow-green-500/30',
+    },
+    error: {
+      icon: XCircle,
+      bg: 'bg-black',
+      border: 'border-green-500',
+      text: 'text-green-400',
+      iconColor: 'text-green-500',
+      progressBg: 'bg-green-500',
+      shadow: 'shadow-green-500/30',
+    },
+    warning: {
+      icon: AlertTriangle,
+      bg: 'bg-black',
+      border: 'border-green-500',
+      text: 'text-green-400',
+      iconColor: 'text-green-500',
+      progressBg: 'bg-green-500',
+      shadow: 'shadow-green-500/30',
+    },
+    info: {
+      icon: Info,
+      bg: 'bg-black',
+      border: 'border-green-500',
+      text: 'text-green-400',
+      iconColor: 'text-green-500',
+      progressBg: 'bg-green-500',
+      shadow: 'shadow-green-500/30',
+    },
+  };
+
+  const config = typeConfig[type];
+  const Icon = config.icon;
+
   return (
-    <div className={`fixed bottom-4 right-4 ${typeStyles[type]} text-white px-4 py-3 rounded-md shadow-lg z-50`}>
-      <div className="flex items-center justify-between">
-        <span>{message}</span>
+    <div
+      className={`
+        relative overflow-hidden rounded-xl border-2 shadow-2xl backdrop-blur-sm
+        ${config.bg} ${config.border} ${config.shadow}
+        transform transition-all duration-300 ease-out
+        ${isVisible && !isLeaving ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
+        min-w-[320px] max-w-md
+      `}
+    >
+      {/* Progress bar */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700">
+        <div
+          className={`h-full ${config.progressBg} transition-all duration-100 ease-linear`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="flex items-start gap-3 p-4 pr-12">
+        {/* Icon */}
+        <div className={`flex-shrink-0 ${config.iconColor}`}>
+          <Icon className="h-6 w-6" />
+        </div>
+
+        {/* Message */}
+        <div className={`flex-1 ${config.text} text-sm font-medium leading-relaxed pt-0.5`}>
+          {message}
+        </div>
+
+        {/* Close button */}
         <button
-          onClick={() => {
-            setIsVisible(false);
-            if (onClose) onClose();
-          }}
-          className="ml-4 text-white focus:outline-none"
+          onClick={handleClose}
+          className={`
+            absolute top-3 right-3 p-1 rounded-lg
+            ${config.iconColor} hover:bg-black/5 dark:hover:bg-white/5
+            transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1
+            focus:ring-current
+          `}
+          aria-label="Close notification"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="h-4 w-4" />
         </button>
       </div>
     </div>

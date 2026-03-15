@@ -13,7 +13,7 @@ FIELD RULES (must match Phase-2 exactly):
   updated_at:  datetime
 """
 
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Index
 from datetime import datetime
 from typing import Optional
 
@@ -22,6 +22,11 @@ class Todo(SQLModel, table=True):
     """Shared todo table — Phase-3 read/write, Phase-2 canonical owner."""
 
     __tablename__ = "todo"
+    __table_args__ = (
+        # Composite indexes for optimized queries
+        Index("ix_todo_user_display", "user_id", "display_id"),
+        Index("ix_todo_user_completed", "user_id", "completed"),
+    )
 
     # ── Phase-2 compatible fields (must not diverge) ────────────────────────
     id: Optional[int] = Field(default=None, primary_key=True)

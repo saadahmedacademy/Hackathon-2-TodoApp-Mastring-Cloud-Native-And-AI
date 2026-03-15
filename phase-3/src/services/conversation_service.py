@@ -11,6 +11,7 @@ from src.mcp.tools.add_task import add_task_tool
 from src.mcp.tools.list_tasks import list_tasks_tool
 from src.mcp.tools.complete_task import complete_task_tool
 from src.mcp.tools.delete_task import delete_task_tool
+from src.mcp.tools.delete_all_tasks import delete_all_tasks_tool
 from src.mcp.tools.update_task import update_task_tool
 import json
 
@@ -63,6 +64,7 @@ class ConversationService:
             "list_tasks_tool":    lambda user_id, **kw: list_tasks_tool(session, user_id, **kw),
             "complete_task_tool": lambda user_id, **kw: complete_task_tool(session, user_id, **kw),
             "delete_task_tool":   lambda user_id, **kw: delete_task_tool(session, user_id, **kw),
+            "delete_all_tasks_tool": lambda user_id, **kw: delete_all_tasks_tool(session, user_id, **kw),
             "update_task_tool":   lambda user_id, **kw: update_task_tool(session, user_id, **kw),
         }
 

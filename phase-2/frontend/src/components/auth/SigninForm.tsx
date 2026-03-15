@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react'; // Import useEffect
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-
-// SVG Icon for a key
-const KeyIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 11.269 6.612l-2.043 2.044a.75.75 0 01-1.06 0l-1.06-1.06a.75.75 0 010-1.06l2.043-2.043A3.75 3.75 0 018.25 6.75zM15 8.25a3.75 3.75 0 10-5.834 1.66L7.16 7.16a.75.75 0 01.04-.153l.362-.836a.75.75 0 01.812-.515l1.393.284a1.5 1.5 0 001.217-.432l.362-.362a1.5 1.5 0 011.217-.432h.262a.75.75 0 01.75.75v.262a1.5 1.5 0 01-.432 1.217l-.362.362a1.5 1.5 0 00-.432 1.217l.284 1.393a.75.75 0 01-.515.812l-.836.362a.75.75 0 01-.153.04z" clipRule="evenodd" />
-  </svg>
-);
 
 interface SigninFormProps {
   onSigninSuccess?: () => void;
@@ -120,10 +114,15 @@ export default function SigninForm({ onSigninSuccess }: SigninFormProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="flex items-center text-sm leading-5"
+              className="flex items-center text-sm leading-5 text-gray-500 hover:text-gray-700 transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
+              title={showPassword ? 'Hide password' : 'Show password'}
             >
-              <KeyIcon className="h-5 w-5 text-yellow-500" />
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
             </button>
           }
         />

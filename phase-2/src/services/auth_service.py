@@ -26,7 +26,7 @@ class AuthService:
         ).first()
 
         if existing_user:
-            raise TodoValidationError("Email already registered", status_code=409)
+            raise TodoValidationError("This email is already in use. Please use a different email or sign in.", status_code=409)
 
         # Validate password strength (basic validation)
         if len(user_data.password) < 8:
@@ -51,7 +51,7 @@ class AuthService:
             error_str = str(e).lower()
             if "duplicate" in error_str or "unique" in error_str or "constraint" in error_str:
                 self.session.rollback()
-                raise TodoValidationError("Email already registered", status_code=409)
+                raise TodoValidationError("This email is already in use. Please use a different email or sign in.", status_code=409)
 
             self.session.rollback()
             logging.error(f"Error during user registration and commit: {e}", exc_info=True)

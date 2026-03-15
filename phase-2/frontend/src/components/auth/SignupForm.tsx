@@ -3,16 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-
-// SVG Icon for a key
-const KeyIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 11.269 6.612l-2.043 2.044a.75.75 0 01-1.06 0l-1.06-1.06a.75.75 0 010-1.06l2.043-2.043A3.75 3.75 0 018.25 6.75zM15 8.25a3.75 3.75 0 10-5.834 1.66L7.16 7.16a.75.75 0 01.04-.153l.362-.836a.75.75 0 01.812-.515l1.393.284a1.5 1.5 0 001.217-.432l.362-.362a1.5 1.5 0 011.217-.432h.262a.75.75 0 01.75.75v.262a1.5 1.5 0 01-.432 1.217l-.362.362a1.5 1.5 0 00-.432 1.217l.284 1.393a.75.75 0 01-.515.812l-.836.362a.75.75 0 01-.153.04z" clipRule="evenodd" />
-  </svg>
-);
 
 interface SignupFormProps {
   onSignupSuccess?: () => void;
@@ -31,6 +25,13 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
 
   const { signup } = useAuth();
   const router = useRouter();
+
+  // Debug: Log when errors change (can be removed in production)
+  useEffect(() => {
+    if (errors.form || errors.email) {
+      console.log('📊 Errors state changed:', errors);
+    }
+  }, [errors]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -102,20 +103,23 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         router.push('/signin'); // Redirect to signin page after successful registration
       }
     } catch (error: any) {
-      console.error('Signup error:', error); // Debug logging
-
       // Extract error details
       const status = error.response?.status;
       const backendMessage = error.response?.data?.detail || error.response?.data?.message;
 
-      console.log('Error status:', status); // Debug logging
-      console.log('Backend message:', backendMessage); // Debug logging
-
       let errorMessage = 'An error occurred during signup';
 
       if (status === 409) {
-        // Email already exists
-        errorMessage = 'Email is already registered.';
+        // Email already exists - use backend message or fallback
+        errorMessage = backendMessage || 'This email is already in use. Please use a different email or sign in.';
+
+        // Set both errors and loading state together
+        setErrors({
+          form: errorMessage,
+          email: 'This email is already registered'
+        });
+        setIsLoading(false);
+        return;
       } else if (status === 400) {
         // Bad request - use backend validation message if available
         errorMessage = backendMessage || 'Invalid input. Please check your data.';
@@ -130,10 +134,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         errorMessage = error.message;
       }
 
-      console.log('Setting error message:', errorMessage); // Debug logging
       setErrors(prev => ({ ...prev, form: errorMessage }));
-      // Do NOT redirect on error
-    } finally {
       setIsLoading(false);
     }
   };
@@ -169,10 +170,15 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="flex items-center text-sm leading-5"
+              className="flex items-center text-sm leading-5 text-gray-500 hover:text-gray-700 transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
+              title={showPassword ? 'Hide password' : 'Show password'}
             >
-              <KeyIcon className="h-5 w-5 text-yellow-500" />
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
             </button>
           }
         />
@@ -191,10 +197,15 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="flex items-center text-sm leading-5"
+              className="flex items-center text-sm leading-5 text-gray-500 hover:text-gray-700 transition-colors"
               aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              title={showConfirmPassword ? 'Hide password' : 'Show password'}
             >
-              <KeyIcon className="h-5 w-5 text-yellow-500" />
+              {showConfirmPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
             </button>
           }
         />
@@ -203,8 +214,37 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
         </p>
 
         {errors.form && (
-          <div className="rounded-md bg-destructive/10 p-4">
-            <div className="text-sm text-destructive">{errors.form}</div>
+          <div
+            className="rounded-md bg-destructive/10 border border-destructive/20 p-4 mb-4"
+            style={{
+              backgroundColor: '#fee2e2',
+              borderColor: '#fca5a5',
+              borderWidth: '1px'
+            }}
+            role="alert"
+            aria-live="assertive"
+          >
+            <div className="flex items-start gap-3">
+              <svg
+                className="h-5 w-5 flex-shrink-0 mt-0.5"
+                style={{ color: '#dc2626' }}
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div
+                className="text-sm font-medium"
+                style={{ color: '#dc2626' }}
+              >
+                {errors.form}
+              </div>
+            </div>
           </div>
         )}
 

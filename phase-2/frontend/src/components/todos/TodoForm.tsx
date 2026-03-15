@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/api';
 import { Todo } from '@/types';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import { useToast } from '@/contexts/ToastContext';
 
 interface TodoFormProps {
   onSuccess?: () => void;
@@ -20,6 +21,7 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const { addToast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -82,6 +84,13 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
       }
 
       if (result.data) {
+        // Show success toast
+        if (isEditing) {
+          addToast('Todo updated successfully! ✨', 'success');
+        } else {
+          addToast(`Todo "${formData.title}" created successfully! 🎉`, 'success');
+        }
+
         if (onSuccess) {
           onSuccess();
         }
@@ -91,15 +100,18 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
         }
       }
     } catch (error: any) {
-      setErrors({ form: error.message || 'An error occurred while saving the todo' });
+      const errorMessage = error.message || 'An error occurred while saving the todo';
+      setErrors({ form: errorMessage });
+      // Show error toast
+      addToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 sm:p-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         <div>
           <Input
             label="Title"
@@ -115,7 +127,7 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-blue-600 mb-1">
+          <label htmlFor="description" className="block text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
             Description (optional)
           </label>
           <textarea
@@ -124,25 +136,25 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
             rows={4}
             value={formData.description}
             onChange={handleChange}
-                      className={`mt-1 block w-full rounded-md border border-input bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[96px] leading-relaxed ${
+                      className={`mt-1 block w-full rounded-md border border-input bg-background p-2 sm:p-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px] sm:min-h-[96px] leading-relaxed ${
                         errors.description ? 'border-destructive text-destructive' : ''
                       }`}            placeholder="Add details..."
           />
-          {errors.description && <p className="mt-2 text-sm text-red-500">{errors.description}</p>}
+          {errors.description && <p className="mt-2 text-xs sm:text-sm text-red-500">{errors.description}</p>}
         </div>
 
         {errors.form && (
-          <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-700">{errors.form}</div>
+          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 sm:p-4 border border-red-200 dark:border-red-800">
+            <div className="text-xs sm:text-sm text-red-700 dark:text-red-400">{errors.form}</div>
           </div>
         )}
 
-        <div className="flex space-x-3">
+        <div className="flex flex-col sm:flex-row gap-3 sm:space-x-3 sm:gap-0">
           <Button
             type="submit"
             isLoading={isLoading}
             variant="primary"
-            className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full sm:w-auto flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             {isEditing ? 'Update Todo' : 'Create Todo'}
           </Button>
@@ -152,7 +164,7 @@ export default function TodoForm({ onSuccess, onCancel, initialTodo, isEditing =
               type="button"
               variant="secondary"
               onClick={onCancel}
-              className="flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full sm:w-auto flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Cancel
             </Button>

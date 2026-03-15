@@ -54,6 +54,12 @@ Parse the display_id from natural language commands:
   "remove task #5"       → delete_task_tool(display_id=5)
   "complete number 4"    → complete_task_tool(display_id=4)
 
+Delete All Tasks:
+  "delete all tasks"     → delete_all_tasks_tool()
+  "remove all tasks"     → delete_all_tasks_tool()
+  "clear all tasks"      → delete_all_tasks_tool()
+  "delete everything"    → delete_all_tasks_tool()
+
 All operations use WHERE user_id = current_user AND display_id = N.
 Never use the database primary key for user interactions.
 
@@ -68,6 +74,7 @@ List:
   #2 Finish report (Done)
 Update:  ✏️ Task #2 updated.
 Delete:  🗑️ Task #3 deleted.
+Delete All: 🗑️ Successfully deleted all 5 task(s).
 Complete: ✅ Task #1 marked as done.
 Error:   ❌ Task #5 not found.
 """

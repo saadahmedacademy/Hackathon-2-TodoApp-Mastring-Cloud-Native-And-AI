@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Todo } from '@/types';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth'; // Import useAuth
@@ -11,7 +11,7 @@ export const useTodos = () => {
   const [error, setError] = useState<string | null>(null);
   const { state: authState } = useAuth(); // Get auth state
 
-  const fetchTodos = async () => {
+  const fetchTodos = useCallback(async () => {
     // Only fetch if authenticated and not loading auth
     if (!authState.isAuthenticated || authState.isLoading) {
       setLoading(false); // Ensure loading is false if not authenticated
@@ -39,11 +39,11 @@ export const useTodos = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authState.isAuthenticated, authState.isLoading]);
 
   useEffect(() => {
     fetchTodos();
-  }, [authState.isAuthenticated, authState.isLoading]); // Depend on auth state
+  }, [fetchTodos]); // Depend on fetchTodos
 
   // Refetch when the AI chat agent modifies todos
   useEffect(() => {
@@ -56,11 +56,11 @@ export const useTodos = () => {
     return () => window.removeEventListener('todos-updated', handler);
   }, [authState.isAuthenticated, authState.isLoading]);
 
-  const refreshTodos = () => {
+  const refreshTodos = useCallback(() => {
     fetchTodos();
-  };
+  }, [fetchTodos]);
 
-  const updateTodoLocally = async (id: string, todoData: Partial<Todo>) => {
+  const updateTodoLocally = useCallback(async (id: string, todoData: Partial<Todo>) => {
     try {
       // Optimistically update the UI before API call
       setTodos(prevTodos =>
@@ -91,9 +91,9 @@ export const useTodos = () => {
       fetchTodos(); // Refetch to revert optimistic update
       throw err;
     }
-  };
+  }, [fetchTodos]);
 
-  const toggleTodoCompletionLocally = async (id: string, completed: boolean) => {
+  const toggleTodoCompletionLocally = useCallback(async (id: string, completed: boolean) => {
     try {
       // Optimistically update the UI before API call
       setTodos(prevTodos =>
@@ -119,9 +119,9 @@ export const useTodos = () => {
       fetchTodos(); // Refetch to revert optimistic update
       throw err;
     }
-  };
+  }, [fetchTodos]);
 
-  const deleteTodoLocally = async (id: string) => {
+  const deleteTodoLocally = useCallback(async (id: string) => {
     try {
       // Optimistically remove the todo from UI before API call
       setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
@@ -138,7 +138,7 @@ export const useTodos = () => {
       fetchTodos(); // Refetch to revert optimistic update
       throw err;
     }
-  };
+  }, [fetchTodos]);
 
   return {
     todos,

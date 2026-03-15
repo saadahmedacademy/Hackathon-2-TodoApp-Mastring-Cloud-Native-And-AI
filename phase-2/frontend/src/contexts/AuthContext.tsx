@@ -64,10 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         window.location.href = '/dashboard';
       }, 100);
     } catch (error: any) {
+      setLocalLoading(false);
       // Preserve the original axios error so forms can access status codes
       throw error;
-    } finally {
-      setLocalLoading(false);
     }
   };
 

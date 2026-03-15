@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Todo } from '@/types';
 import { apiClient } from '@/lib/api';
 import Button from '@/components/ui/Button';
@@ -15,7 +15,7 @@ interface TodoItemProps {
   deleteTodoLocally?: (id: string) => Promise<any>;
 }
 
-export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletionLocally, updateTodoLocally, deleteTodoLocally }: TodoItemProps) {
+const TodoItem = memo(function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletionLocally, updateTodoLocally, deleteTodoLocally }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.title);
   const [editDescription, setEditDescription] = useState(todo.description || '');
@@ -123,7 +123,7 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
   };
 
   return (
-    <div className={`border rounded-lg p-4 mb-3 transition-all duration-200 ${todo.completed ? 'bg-green-50 dark:bg-green-900/20' : 'bg-secondary dark:bg-secondary'} ${isLoading ? 'opacity-70' : ''}`}>
+    <div className={`border-2 rounded-xl p-4 sm:p-5 transition-all duration-300 shadow-lg hover:shadow-2xl ${todo.completed ? 'bg-gradient-to-br from-green-100 to-emerald-100 border-green-400 dark:from-green-900/20 dark:to-emerald-900/20 dark:border-green-700' : 'bg-gradient-to-br from-white to-gray-50 border-gray-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-600'} ${isLoading ? 'opacity-70' : ''}`}>
       {isEditing ? (
         <div className="space-y-3">
           <input
@@ -159,27 +159,35 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
           </div>
         </div>
       ) : (
-        <div className="flex items-start justify-between group">
-          <div className="flex items-start space-x-3 flex-1 min-w-0">
+        <div className="group lg:relative">
+          <div className="flex items-start gap-2 sm:gap-3">
             <input
               type="checkbox"
               checked={todo.completed}
               onChange={handleToggleComplete}
               disabled={isLoading}
-              className="mt-1 h-5 w-5 rounded border border-input bg-background text-primary focus:ring-offset-background focus:ring-2 focus:ring-ring"
+              className="mt-1 h-5 w-5 flex-shrink-0 rounded border border-input bg-background text-primary focus:ring-offset-background focus:ring-2 focus:ring-ring"
               aria-label={todo.completed ? `Mark "${todo.title}" as incomplete` : `Mark "${todo.title}" as complete`}
             />
-            <div className="min-w-0 flex-1">
-              <h3 className={`text-lg font-medium truncate ${todo.completed ? 'line-through text-gray-600 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}>
-                <span className="inline-block mr-2 text-sm font-mono text-muted-foreground">
-                  [{todo.display_id ?? '?'}]
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                className={`text-base sm:text-lg font-medium lg:pr-32 ${todo.completed ? 'line-through' : ''} group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors`}
+                style={todo.completed ? { color: 'var(--foreground)' } : {}}
+              >
+                <span className="text-sm font-mono text-muted-foreground">
+                  [{todo.display_id ?? '?'}]{' '}
                 </span>
-                {todo.title}
-              </h3>
+                <span className={!todo.completed ? 'text-gray-900 dark:text-gray-100' : ''}>
+                  {todo.title}
+                </span>
+              </div>
               {todo.description && (
-                <p className={`mt-1 text-sm break-words max-w-full ${todo.completed ? 'line-through text-gray-600 dark:text-gray-400' : 'text-gray-800 dark:text-gray-300'} group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors`}>
+                <div
+                  className={`mt-1 text-sm lg:pr-32 ${todo.completed ? 'line-through' : 'text-gray-800 dark:text-gray-300'} group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors`}
+                  style={todo.completed ? { color: 'var(--foreground)' } : {}}
+                >
                   {todo.description}
-                </p>
+                </div>
               )}
               <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
                 {(() => {
@@ -202,12 +210,12 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
               </p>
             </div>
           </div>
-          <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-2 mt-3 lg:mt-0 lg:absolute lg:top-2 lg:right-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
             <Button
               onClick={() => setIsEditing(true)}
               variant="outline"
               size="sm"
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="flex-1 lg:flex-none text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-1.5"
               aria-label={`Edit todo: ${todo.title}`}
             >
               Edit
@@ -216,7 +224,7 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
               onClick={handleDelete}
               variant="outline"
               size="sm"
-              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className="flex-1 lg:flex-none text-xs sm:text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5"
               aria-label={`Delete todo: ${todo.title}`}
             >
               Delete
@@ -226,4 +234,6 @@ export default function TodoItem({ todo, onUpdate, onDelete, toggleTodoCompletio
       )}
     </div>
   );
-}
+});
+
+export default TodoItem;
