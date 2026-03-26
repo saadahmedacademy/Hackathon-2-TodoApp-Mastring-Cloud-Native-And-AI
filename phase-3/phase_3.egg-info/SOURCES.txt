@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+phase_3.egg-info/PKG-INFO
+phase_3.egg-info/SOURCES.txt
+phase_3.egg-info/dependency_links.txt
+phase_3.egg-info/requires.txt
+phase_3.egg-info/top_level.txt
+src/__init__.py
+src/main.py
