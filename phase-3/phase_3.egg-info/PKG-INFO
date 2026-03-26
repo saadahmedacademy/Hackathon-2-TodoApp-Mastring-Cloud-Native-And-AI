@@ -1,0 +1,97 @@
+Metadata-Version: 2.4
+Name: phase-3
+Version: 0.1.0
+Summary: Phase 3 Backend AI Orchestrator
+Author-email: Gemini CLI <gemini@example.com>
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi~=0.109.0
+Requires-Dist: uvicorn~=0.27.0
+Requires-Dist: sqlmodel~=0.0.16
+Requires-Dist: psycopg2-binary~=2.9.9
+Requires-Dist: alembic~=1.13.1
+Requires-Dist: openai~=2.19.0
+Requires-Dist: openai-agents
+Requires-Dist: httpx~=0.26.0
+Requires-Dist: python-dotenv~=1.0.1
+Requires-Dist: asyncpg~=0.29.0
+Requires-Dist: pydantic-settings~=2.0
+
+# Phase 3 Backend AI Orchestrator
+
+This service provides AI-driven chat functionality and task management through a FastAPI backend. It integrates with OpenAI Agents SDK and the Official MCP SDK, connecting to an existing Neon PostgreSQL database.
+
+## Features
+
+- AI-driven chat with conversation history.
+- Task management (add, list, complete, delete, update) via API.
+- Integration with OpenAI Agents SDK.
+- Integration with Official MCP SDK.
+- Stateless request processing.
+- Layered architecture for maintainability.
+
+## Getting Started
+
+For detailed setup, configuration, and running instructions, please refer to the comprehensive [Quickstart Guide](specs/008-phase-3-backend-ai-orchestrator/quickstart.md).
+
+### Installation
+
+1.  **Clone the repository:** (Assumed to be part of a larger project)
+2.  **Navigate to the `phase-3` directory:**
+    ```bash
+    cd phase-3
+    ```
+3.  **Create and activate a Python virtual environment:**
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+4.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Configuration
+
+The service requires environment variables for database connection and API keys.
+
+1.  Create a `.env` file in the `phase-3` directory.
+2.  Populate it with your `DATABASE_URL`, `OPENAI_API_KEY`, and optional MCP SDK credentials.
+    (See `.env.example` for required variables).
+
+### Running the Application
+
+1.  **Apply Database Migrations:**
+    ```bash
+    alembic upgrade head
+    ```
+2.  **Start the FastAPI server:**
+    ```bash
+    uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    ```
+    The API will be accessible at `http://localhost:8000`.
+
+## Project Structure
+
+```
+phase-3/
+├── src/
+│   ├── api/                # FastAPI routers and endpoint definitions
+│   ├── models/             # SQLModel definitions for Conversation, Message, Task
+│   ├── repositories/       # Database interaction logic
+│   ├── services/           # Business logic, orchestrating repositories and agents
+│   ├── db/                 # Database connection, session management, migration utilities
+│   ├── utils/              # General utility functions
+│   ├── agents/             # AI agent definitions and configurations
+│   └── mcp/                # MCP tool registration and execution logic
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── contract/
+├── alembic/                # Alembic migration scripts
+├── alembic.ini             # Alembic configuration
+├── config.py               # Application configuration (e.g., database URL, API keys)
+├── requirements.txt        # Python dependencies
+└── README.md
+```
