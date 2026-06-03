@@ -19,6 +19,23 @@ class TodoNotFoundException(TodoException):
             status_code=404
         )
 
+class TodoNotFoundException(TodoException):
+    """Raised when a todo item is not found."""
+
+    def __init__(self, todo_id: int):
+        super().__init__(
+            message=f"Todo with ID {todo_id} not found",
+            status_code=404
+        )
+
+class AppValidationError(TodoException):
+    """Raised when validation fails for user authentication/registration."""
+
+    def __init__(self, message: str, status_code: int = 422):
+        super().__init__(
+            message=message,
+            status_code=status_code
+        )
 
 class TodoValidationError(TodoException):
     """Raised when validation fails for todo operations."""
