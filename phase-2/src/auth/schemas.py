@@ -50,3 +50,17 @@ class AuthResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    
+
+class LogoutRequest(BaseModel):
+
+    """Schema for logout — client sends their refresh token to invalidate."""
+
+    refresh_token: str
+
+
+class LogoutResponse(BaseModel):
+
+    """Schema for logout response."""
+
+    message: str
