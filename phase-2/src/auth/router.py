@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from .schemas import UserRegistration, UserLogin, TokenResponse, TokenRefresh, AuthResponse, UserResponse
 from ..services.auth_service import AuthService
 from ..db.session import get_session
-from ..exceptions.base import TodoValidationError
+from ..exceptions.base import AppValidationError
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -49,7 +49,7 @@ async def register(
             refresh_token=auth_tokens.refresh_token,
             token_type=auth_tokens.token_type
         )
-    except TodoValidationError as e:
+    except AppValidationError as e:
         raise HTTPException(status_code=e.status_code, detail=e.message)
     except IntegrityError as e:
         # Handle database integrity errors like duplicate email
