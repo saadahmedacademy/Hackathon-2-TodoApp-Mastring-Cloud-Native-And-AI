@@ -109,29 +109,20 @@ async def refresh_token(
 @router.post("/logout", response_model=LogoutResponse)
 
 async def logout(
-
     logout_data: LogoutRequest,
-
     session: Session = Depends(get_session)
-
 ):
-
     """Logout user by revoking their refresh token."""
-
     try:
-
         auth_service = AuthService(session)
-
         auth_service.logout_user(logout_data.refresh_token)
 
         return LogoutResponse(message="Successfully logged out")
 
     except TodoValidationError as e:
-
         raise HTTPException(status_code=e.status_code, detail=e.message)
 
     except HTTPException:
-
         raise
 
     except Exception as e:
