@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import UserRegistration, UserLogin, TokenResponse, TokenRefresh, AuthResponse, UserResponse
+from .schemas import UserRegistration, UserLogin, TokenResponse, TokenRefresh, AuthResponse, UserResponse, LogoutRequest, LogoutResponse
 from ..services.auth_service import AuthService
 from ..db.session import get_session
 from ..exceptions.base import AppValidationError
@@ -57,7 +57,7 @@ async def register(
         if "duplicate" in error_msg or "unique" in error_msg or "constraint" in error_msg:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="This email is already in use. Please use a different email or sign in."
+                detail="Email already registered"
             )
         raise HTTPException(status_code=500, detail="Internal server error")
     except HTTPException:
@@ -106,9 +106,36 @@ async def refresh_token(
     return tokens
 
 
-@router.post("/logout")
-async def logout():
-    """Logout user (currently just a placeholder - in a real app would invalidate tokens)."""
-    # In a real implementation, we would invalidate the refresh token
-    # For now, we just return a success message
-    return {"message": "Successfully logged out"}
+@router.post("/logout", response_model=LogoutResponse)
+
+async def logout(
+
+    logout_data: LogoutRequest,
+
+    session: Session = Depends(get_session)
+
+):
+
+    """Logout user by revoking their refresh token."""
+
+    try:
+
+        auth_service = AuthService(session)
+
+        auth_service.logout_user(logout_data.refresh_token)
+
+        return LogoutResponse(message="Successfully logged out")
+
+    except TodoValidationError as e:
+
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+
+    except HTTPException:
+
+        raise
+
+    except Exception as e:
+
+        logging.error(f"Logout error: {e}", exc_info=True)
+
+        raise HTTPException(status_code=500, detail="Internal server error")
