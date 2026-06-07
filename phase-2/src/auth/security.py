@@ -48,10 +48,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create a refresh token with the given data and expiration."""
     to_encode = data.copy()
+    jti = str(uuid.uuid4())  
 
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
-        jti = str(uuid.uuid4())  
     else:
         expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
