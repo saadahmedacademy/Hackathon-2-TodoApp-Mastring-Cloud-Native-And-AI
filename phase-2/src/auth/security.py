@@ -6,6 +6,7 @@ from typing import Optional
 import os
 from jose import JWTError, jwt
 from dotenv import load_dotenv
+import uuid  
 
 # Load environment variables
 load_dotenv()
@@ -50,10 +51,11 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) 
 
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
+        jti = str(uuid.uuid4())  
     else:
         expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
-    to_encode.update({"exp": expire, "type": "refresh"})
+    to_encode.update({"exp": expire, "type": "refresh", "jti": jti})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
