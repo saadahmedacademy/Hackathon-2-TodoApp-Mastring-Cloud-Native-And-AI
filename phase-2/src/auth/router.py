@@ -9,6 +9,7 @@ from .schemas import UserRegistration, UserLogin, TokenResponse, TokenRefresh, A
 from ..services.auth_service import AuthService
 from ..db.session import get_session
 from ..exceptions.base import AppValidationError
+from ..exceptions.base import TodoValidationError 
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
