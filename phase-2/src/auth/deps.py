@@ -14,19 +14,6 @@ load_dotenv()
 
 security = HTTPBearer()
 
-
-def verify_token(token: str) -> Optional[Dict]:
-    """Verify and decode a JWT token, returning the payload if valid."""
-    try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            return None
-        return payload
-    except JWTError:
-        return None
-
-
 async def get_current_user(request: Request) -> str:
     """Dependency to get the current user ID from the request state (set by AuthMiddleware)."""
     if not hasattr(request.state, 'user_id') or request.state.user_id is None:
