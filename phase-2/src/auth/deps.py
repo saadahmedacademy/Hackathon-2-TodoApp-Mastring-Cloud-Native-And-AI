@@ -12,8 +12,6 @@ from ..auth.config import JWT_SECRET_KEY, JWT_ALGORITHM
 # Load environment variables
 load_dotenv()
 
-security = HTTPBearer()
-
 async def get_current_user(request: Request) -> str:
     """Dependency to get the current user ID from the request state (set by AuthMiddleware)."""
     if not hasattr(request.state, 'user_id') or request.state.user_id is None:
