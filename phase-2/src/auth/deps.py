@@ -11,7 +11,7 @@ async def get_current_user(request: Request) -> str:
         or request.state.user_id is None
         or not isinstance(request.state.user_id, str)
     ):
-        ra ise HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
